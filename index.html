@@ -19,6 +19,17 @@
          our script; Babel will compile it on the fly.  The preset for React
          transforms the JSX into calls to React.createElement. -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Firebase compat SDKs.  These scripts expose a global `firebase`
+         namespace with backwards‑compatible APIs for Auth and Firestore.
+         Using the compat versions avoids the need for dynamic `import()`
+         statements (which are not supported by Babel out of the box) and
+         ensures the modules load correctly via the CDN.  See
+         https://firebase.google.com/docs/web/modular-upgrade#use-compat for
+         more details. -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   </head>
   <body class="min-h-screen bg-slate-50 text-slate-800 font-sans">
     <div id="root"></div>
@@ -45,20 +56,11 @@
         measurementId: "G-87Q44YRFDY"
       };
 
-      // Lazy‑load Firebase modules as ES modules.  Firebase v9+ supports
-      // modular imports which work in browsers without a bundler.  See
-      // https://firebase.google.com/docs/web/compatibility?hl=en for details.
-      async function loadFirebase() {
-        const [{ initializeApp }, { getAuth, signInAnonymously, onAuthStateChanged }, { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc }] = await Promise.all([
-          import('https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js'),
-          import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js'),
-          import('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js'),
-        ]);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        return { auth, db, signInAnonymously, onAuthStateChanged, collection, onSnapshot, doc, setDoc, deleteDoc };
-      }
+      // Initialise Firebase using the compat SDKs loaded via script tags.  The
+      // compat API exposes a global `firebase` namespace with methods
+      // similar to v8.  Because these scripts are loaded synchronously in the
+      // <head>, Firebase is ready to use when this function is executed.
+      // See https://firebase.google.com/docs/web/modular-upgrade#use-compat for details.
 
       // Application constants.  These define the statuses, diagnosis options
       // and the month labels used in the report table.
@@ -153,28 +155,43 @@
         // reinitialising Firebase on every render.
         const firebaseRef = React.useRef(null);
 
-        // On mount: load Firebase, sign in anonymously, and attach a
-        // Firestore snapshot listener.  On cleanup the listener is removed.
+        // On mount: initialise Firebase, sign in anonymously, and attach a
+        // Firestore snapshot listener.  On cleanup the listeners are removed.
         useEffect(() => {
-          let unsubscribe = null;
-          loadFirebase().then(({ auth, db, signInAnonymously, onAuthStateChanged, collection, onSnapshot, doc, setDoc, deleteDoc }) => {
-            firebaseRef.current = { auth, db, signInAnonymously, onAuthStateChanged, collection, onSnapshot, doc, setDoc, deleteDoc };
-            signInAnonymously(auth).catch(err => console.error('Auth error:', err));
-            const unSubAuth = onAuthStateChanged(auth, currentUser => {
+          let unsubscribeAuth = null;
+          let unsubscribeSnap = null;
+          try {
+            // Initialize Firebase using the global compat API.  If Firebase
+            // has already been initialised (e.g. due to hot reload), calling
+            // initializeApp again will throw, so we catch and ignore.
+            const app = firebase.apps && firebase.apps.length ? firebase.apps[0] : firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+            firebaseRef.current = { auth, db };
+            // Sign in anonymously to enable read/write access (rules must
+            // permit anonymous users).  Errors are logged to the console.
+            auth.signInAnonymously().catch(err => console.error('Auth error:', err));
+            // Monitor authentication state and update local user state
+            unsubscribeAuth = auth.onAuthStateChanged(currentUser => {
               setUser(currentUser);
             });
-            // When the user is set we can listen to the patients collection
-            unsubscribe = onSnapshot(collection(db, 'patients'), snapshot => {
+            // Listen to the patients collection in Firestore.  The callback
+            // runs whenever the data changes.  When we receive data we
+            // update local state and clear the syncing indicator.
+            unsubscribeSnap = db.collection('patients').onSnapshot(snapshot => {
               const fetched = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
               setPatients(fetched);
               setIsSyncing(false);
-            }, (error) => {
+            }, error => {
               console.error('Data Sync Error:', error);
               setIsSyncing(false);
             });
-          });
+          } catch (err) {
+            console.error('Firebase initialisation error:', err);
+          }
           return () => {
-            if (unsubscribe) unsubscribe();
+            if (unsubscribeAuth) unsubscribeAuth();
+            if (unsubscribeSnap) unsubscribeSnap();
           };
         }, []);
 
@@ -291,22 +308,23 @@
         const handleSave = async (e) => {
           e.preventDefault();
           if (!firebaseRef.current) return;
-          const { db, setDoc, doc, collection } = firebaseRef.current;
+          const { db } = firebaseRef.current;
           const patientId = editingPatient ? editingPatient.id : Date.now().toString();
           const payload = { ...formData, id: patientId };
           handleCloseModal();
-          const patientsRef = collection(db, 'patients');
-          await setDoc(doc(patientsRef, patientId), payload);
+          // Write the document to Firestore.  The compat API uses
+          // collection().doc().set() for writes.
+          await db.collection('patients').doc(patientId).set(payload);
         };
 
         // Delete a patient record from Firestore.  Asks for confirmation via
         // window.confirm() before performing the deletion.
         const handleDelete = async (id) => {
           if (!firebaseRef.current) return;
-          const { db, deleteDoc, doc, collection } = firebaseRef.current;
+          const { db } = firebaseRef.current;
           if (window.confirm('Are you sure you want to delete this record? This will delete it for ALL doctors.')) {
-            const patientsRef = collection(db, 'patients');
-            await deleteDoc(doc(patientsRef, id));
+            // Delete the document from Firestore using the compat API
+            await db.collection('patients').doc(id).delete();
           }
         };
 
