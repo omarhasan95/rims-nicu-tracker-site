@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="RIMS NICU Tracker for live neonatal admissions, outcomes, and monthly reporting."
+    />
     <title>RIMS NICU Tracker</title>
     <!--
       Tailwind via CDN.  The official Play CDN compiles Tailwind on the fly in
@@ -13,8 +17,8 @@
     <!-- React and ReactDOM UMD bundles for use with babel-standalone.  Using the
          development builds makes debugging easier.  You could switch to the
          production builds once everything is working. -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <!-- Babel stand‑alone compiler.  This allows us to write JSX directly in
          our script; Babel will compile it on the fly.  The preset for React
          transforms the JSX into calls to React.createElement. -->
@@ -37,7 +41,7 @@
          Babel will compile this at runtime.  For larger projects it is
          recommended to use a proper build tool, but this approach keeps the
          example entirely self‑contained. -->
-    <script type="text/babel">
+    <script type="text/babel" data-presets="react">
       const { useState, useMemo, useEffect } = React;
 
       // --- Firebase configuration ---
@@ -135,6 +139,7 @@
         const [filterStatus, setFilterStatus] = useState('All');
         const [user, setUser] = useState(null);
         const [isSyncing, setIsSyncing] = useState(true);
+        const [connectionError, setConnectionError] = useState('');
         const [isModalOpen, setIsModalOpen] = useState(false);
         const [editingPatient, setEditingPatient] = useState(null);
         const [formData, setFormData] = useState({
@@ -174,6 +179,11 @@
             // Monitor authentication state and update local user state
             unsubscribeAuth = auth.onAuthStateChanged(currentUser => {
               setUser(currentUser);
+              if (!currentUser) {
+                setConnectionError('Signed out from the live database. New changes will not sync until Firebase reconnects.');
+              } else {
+                setConnectionError('');
+              }
             });
             // Listen to the patients collection in Firestore.  The callback
             // runs whenever the data changes.  When we receive data we
@@ -182,12 +192,16 @@
               const fetched = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
               setPatients(fetched);
               setIsSyncing(false);
+              setConnectionError('');
             }, error => {
               console.error('Data Sync Error:', error);
               setIsSyncing(false);
+              setConnectionError('Live sync could not connect to Firestore. Check Firebase Auth and Firestore rules before using this site in production.');
             });
           } catch (err) {
             console.error('Firebase initialisation error:', err);
+            setIsSyncing(false);
+            setConnectionError('Firebase failed to initialize in this browser. Verify the project configuration and allowed domains before launch.');
           }
           return () => {
             if (unsubscribeAuth) unsubscribeAuth();
@@ -210,7 +224,9 @@
         // Filtered patient list based on search query and selected status
         const filteredPatients = useMemo(() => {
           return patients.filter(p => {
-            const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.uhid.toLowerCase().includes(searchQuery.toLowerCase());
+            const patientName = (p.name || '').toLowerCase();
+            const patientUhid = (p.uhid || '').toLowerCase();
+            const matchesSearch = patientName.includes(searchQuery.toLowerCase()) || patientUhid.includes(searchQuery.toLowerCase());
             const matchesFilter = filterStatus === 'All' || p.status === filterStatus;
             return matchesSearch && matchesFilter;
           }).sort((a, b) => new Date(b.admissionDate) - new Date(a.admissionDate));
@@ -328,6 +344,61 @@
           }
         };
 
+        const handleExportCsv = () => {
+          const csvRows = [
+            [
+              'Month',
+              'NICU Admissions',
+              'SNCU Direct',
+              'SNCU Transfer In',
+              'SNCU Total',
+              'NICU Deaths',
+              'SNCU Deaths',
+              'NICU Discharge',
+              'SNCU Discharge',
+              'LAMA',
+              'Transfer Out',
+              ...DIAGNOSIS_OPTIONS.flatMap(d => [`${d} Total Admission`, `${d} Death`]),
+              'Deaths <24 hrs',
+              'Deaths 24h-7d',
+              'Deaths 8d-28d',
+              'Deaths >28d'
+            ].join(',')
+          ];
+
+          monthlyReport.forEach(row => {
+            csvRows.push([
+              row.month,
+              row.nicuAdmissions,
+              row.sncuDirect,
+              row.sncuTransfer,
+              row.sncuTotal,
+              row.nicuDeaths,
+              row.sncuDeaths,
+              row.nicuDischarge,
+              row.sncuDischarge,
+              row.lama,
+              row.transfer,
+              ...DIAGNOSIS_OPTIONS.flatMap(d => [row.diagnosis[d].ta, row.diagnosis[d].death]),
+              row.deathUnder24,
+              row.death1to7d,
+              row.death8to28d,
+              row.deathOver28d
+            ].join(','));
+          });
+
+          const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          const stamp = new Date().toISOString().slice(0, 10);
+          link.href = url;
+          link.download = `nicu-monthly-report-${stamp}.csv`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        };
+
         return (
           <div>
             {/* Header */}
@@ -349,6 +420,11 @@
               </div>
             </header>
             <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              {connectionError && (
+                <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  {connectionError}
+                </div>
+              )}
               {activeTab === 'tracker' && (
                 <div className="animate-in fade-in duration-300">
                   {/* Statistics Dashboard */}
@@ -451,8 +527,12 @@
                   <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
                       <h2 className="text-lg font-bold text-slate-800">Mortality & Morbidity Report</h2>
-                      {/* Export button placeholder; functionality could be added later */}
-                      <button className="text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors border border-blue-200">Export CSV</button>
+                      <button
+                        onClick={handleExportCsv}
+                        className="text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors border border-blue-200"
+                      >
+                        Export CSV
+                      </button>
                     </div>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm text-left whitespace-nowrap border-collapse">
