@@ -996,7 +996,8 @@ tr:hover td {
       from: "",
       to: ""
     },
-    unsubscribers: []
+    unsubscribers: [],
+    bootResolved: false
   };
 
   const appRoot = document.getElementById("app");
@@ -2160,7 +2161,19 @@ tr:hover td {
     state.unsubscribers = [settingsUnsub, profileUnsub, recordsUnsub];
   }
 
-  auth.onAuthStateChanged(async function (user) {
+  const AUTH_BOOT_TIMEOUT_MS = 5000;
+  const bootTimer = setTimeout(function () {
+    if (!state.bootResolved) {
+      state.booting = false;
+      state.authStatus = "Taking longer than expected to connect. You can still sign in.";
+      state.authStatusType = "warning";
+      render();
+    }
+  }, AUTH_BOOT_TIMEOUT_MS);
+
+  auth.onAuthStateChanged(function (user) {
+    state.bootResolved = true;
+    clearTimeout(bootTimer);
     state.booting = false;
     state.currentUser = user || null;
     state.authStatus = "";
@@ -2176,16 +2189,17 @@ tr:hover td {
       return;
     }
 
-    try {
-      await ensureProfileAndSettings(user);
-      subscribeToCloud();
-      if (state.route === "settings" && !isAdmin()) {
-        saveRoute("dashboard");
-      }
-    } catch (error) {
-      setStatus(friendlyFirestoreError(error, "Could not initialize Firebase data."), "error");
+    // Fast path: render + subscribe immediately for returning signed-in users.
+    subscribeToCloud();
+    if (state.route === "settings" && !isAdmin()) {
+      saveRoute("dashboard");
     }
     render();
+
+    // Background consistency sync (do not block first paint).
+    ensureProfileAndSettings(user).catch(function (error) {
+      setStatus(friendlyFirestoreError(error, "Could not initialize Firebase data."), "error");
+    });
   });
 
   window.addEventListener("hashchange", function () {
@@ -2202,6 +2216,9 @@ tr:hover td {
 </script>
 </body>
 </html>
+
+
+
 
 
 
