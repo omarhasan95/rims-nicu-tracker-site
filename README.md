@@ -1,26 +1,46 @@
 # RIMS NICU Tracker Site
 
-Static NICU dashboard prototype for admissions, analytics, reports, and optional Supabase-backed authentication.
+Single-file NICU tracking app with:
 
-## Included
+- Firebase Authentication
+- Google Sign-In
+- Cloud Firestore live sync
+- Flexible patient admission form
+- Admin-only settings page
+- Excel workbook export for monthly NICU and SNCU reporting
 
-- `index.html` contains the full app
-- Demo mode with seeded sample NICU records
-- Optional Supabase auth and CRUD setup
-- Browser-side charts, CSV/JSON import-export, and print-ready reports
+## What Changed
 
-## Quick Start
+- Demo mode removed
+- Demo account removed
+- Dummy patient records removed
+- Google Sign-In enabled in the UI
+- Settings locked to admin users
+- Patient admission no longer requires every field at the start
+- Death timing and cause detail dropdowns added for reporting consistency
+- Excel export now includes:
+  - `Patient Records`
+  - `Monthly Summary`
+  - `Death Detail Reference`
 
-1. Open `index.html` locally in a browser for demo mode.
-2. Deploy the same file to Vercel, Netlify, or GitHub Pages for a static hosting setup.
-3. In the app Settings screen, add `SUPABASE_URL` and `SUPABASE_ANON_KEY` if you want live cloud data.
+## Data Model
 
-## Supabase Notes
+Firestore collections used by the app:
 
-- Create a `nicu_records` table using the schema shown inside the app.
-- Enable email authentication in Supabase Auth.
-- Add row-level security policies appropriate for your hospital or team.
+- `settings/app`
+- `users/{uid}`
+- `records/{recordId}`
 
-## Current Scope
+## Admin Behavior
 
-This version is intentionally self-contained so the prototype can be reviewed, shared, and deployed quickly.
+- The first signed-in user becomes admin automatically if no admin email is saved yet.
+- Admin users can update hospital identity and the admin email list.
+- Non-admin users can still create and update patient records.
+
+## Deployment
+
+This is a static HTML app. Deploy `index.html` to Vercel, Firebase Hosting, Netlify, or any static host.
+
+## Important
+
+For true admin protection, apply Firestore security rules that match the app's admin email logic.
