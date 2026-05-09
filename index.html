@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -1005,6 +1005,34 @@ tr:hover td {
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
 
+  // Offline resilience + perceived speed
+  db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
+  db.enablePersistence({ synchronizeTabs: true }).catch(function () {
+    // ignore unsupported/private-mode persistence failures
+  });
+
+  if (typeof db.disableNetwork === "function") {
+    if (navigator.onLine) {
+      db.enableNetwork().catch(function () {});
+    } else {
+      db.disableNetwork().catch(function () {});
+    }
+  }
+
+  window.addEventListener("online", function () {
+    if (typeof db.enableNetwork === "function") {
+      db.enableNetwork().catch(function () {});
+    }
+    setStatus("Back online. Syncing latest records...", "success");
+  });
+
+  window.addEventListener("offline", function () {
+    if (typeof db.disableNetwork === "function") {
+      db.disableNetwork().catch(function () {});
+    }
+    setStatus("You are offline. Showing cached data; sync resumes automatically.", "error");
+  });
+
   function getSavedRoute() {
     const hash = location.hash.replace("#", "").trim();
     const stored = localStorage.getItem(KEYS.route) || "dashboard";
@@ -1093,6 +1121,15 @@ tr:hover td {
     state.globalStatusType = "";
   }
 
+  function friendlyFirestoreError(error, fallback) {
+    const code = String(error && error.code || "");
+    const msg = String(error && error.message || "");
+    if (code.indexOf("unavailable") !== -1 || /client is offline/i.test(msg)) {
+      return "You are offline. Showing cached data; syncing resumes when internet returns.";
+    }
+    return fallback || msg || "Unexpected error.";
+  }
+
   function escapeHtml(value) {
     return String(value == null ? "" : value).replace(/[&<>"']/g, function (char) {
       return {
@@ -1120,7 +1157,7 @@ tr:hover td {
 
   function fmtDate(value) {
     if (!value) {
-      return "—";
+      return "â€”";
     }
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
@@ -1440,9 +1477,9 @@ tr:hover td {
         "<div class=\"record-card-head\"><div><strong>" + escapeHtml(record.baby_name || "Unnamed baby") + "</strong><p class=\"tiny\">" + escapeHtml(record.patient_id || "Auto ID on save") + "</p></div><span class=\"outcome-pill " + outcomeClass(record.outcome) + "\">" + escapeHtml(record.outcome) + "</span></div>" +
         "<div class=\"record-card-grid\">" +
           cardMeta("Admission date", fmtDate(record.admission_date)) +
-          cardMeta("Unit", record.unit || "—") +
-          cardMeta("Mother", record.mother_name || "—") +
-          cardMeta("Diagnosis", record.diagnosis_group || "—") +
+          cardMeta("Unit", record.unit || "â€”") +
+          cardMeta("Mother", record.mother_name || "â€”") +
+          cardMeta("Diagnosis", record.diagnosis_group || "â€”") +
         "</div>" +
         "<div class=\"row\" style=\"margin-top:12px\"><button class=\"btn btn-secondary btn-sm\" data-edit=\"" + safeAttr(record.id) + "\">Edit</button></div>" +
       "</article>"
@@ -1540,7 +1577,7 @@ tr:hover td {
           "<thead><tr><th>Patient ID</th><th>Baby</th><th>Admission</th><th>Outcome</th><th>Unit</th><th>Source</th><th>Mother</th><th>Diagnosis</th><th>Death Timing</th><th>Action</th></tr></thead>" +
           "<tbody>" +
             records.map(function (record) {
-              return "<tr><td>" + escapeHtml(record.patient_id || "—") + "</td><td>" + escapeHtml(record.baby_name || "—") + "</td><td>" + escapeHtml(fmtDate(record.admission_date)) + "</td><td><span class=\"outcome-pill " + outcomeClass(record.outcome) + "\">" + escapeHtml(record.outcome) + "</span></td><td>" + escapeHtml(record.unit || "—") + "</td><td>" + escapeHtml(record.admission_source || "—") + "</td><td>" + escapeHtml(record.mother_name || "—") + "</td><td>" + escapeHtml(record.diagnosis_group || "—") + "</td><td>" + escapeHtml(record.death_timing_bucket || "—") + "</td><td><button class=\"btn btn-secondary btn-sm\" data-edit=\"" + safeAttr(record.id) + "\">Edit</button></td></tr>";
+              return "<tr><td>" + escapeHtml(record.patient_id || "â€”") + "</td><td>" + escapeHtml(record.baby_name || "â€”") + "</td><td>" + escapeHtml(fmtDate(record.admission_date)) + "</td><td><span class=\"outcome-pill " + outcomeClass(record.outcome) + "\">" + escapeHtml(record.outcome) + "</span></td><td>" + escapeHtml(record.unit || "â€”") + "</td><td>" + escapeHtml(record.admission_source || "â€”") + "</td><td>" + escapeHtml(record.mother_name || "â€”") + "</td><td>" + escapeHtml(record.diagnosis_group || "â€”") + "</td><td>" + escapeHtml(record.death_timing_bucket || "â€”") + "</td><td><button class=\"btn btn-secondary btn-sm\" data-edit=\"" + safeAttr(record.id) + "\">Edit</button></td></tr>";
             }).join("") +
           "</tbody>" +
         "</table>" +
@@ -2097,7 +2134,7 @@ tr:hover td {
       state.profile = Object.assign({}, state.profile || {}, { role: role });
       render();
     }, function (error) {
-      setStatus(error.message || "Could not subscribe to settings.", "error");
+      setStatus(friendlyFirestoreError(error, "Could not subscribe to settings."), "error");
     });
 
     const profileUnsub = db.collection("users").doc(state.currentUser.uid).onSnapshot(function (snapshot) {
@@ -2109,7 +2146,7 @@ tr:hover td {
       }
       render();
     }, function (error) {
-      setStatus(error.message || "Could not subscribe to profile.", "error");
+      setStatus(friendlyFirestoreError(error, "Could not subscribe to profile."), "error");
     });
 
     const recordsUnsub = db.collection("records").onSnapshot(function (snapshot) {
@@ -2120,7 +2157,7 @@ tr:hover td {
       });
       render();
     }, function (error) {
-      setStatus(error.message || "Could not subscribe to records.", "error");
+      setStatus(friendlyFirestoreError(error, "Could not subscribe to records."), "error");
     });
 
     state.unsubscribers = [settingsUnsub, profileUnsub, recordsUnsub];
@@ -2149,7 +2186,7 @@ tr:hover td {
         saveRoute("dashboard");
       }
     } catch (error) {
-      setStatus(error.message || "Could not initialize Firebase data.", "error");
+      setStatus(friendlyFirestoreError(error, "Could not initialize Firebase data."), "error");
     }
     render();
   });
@@ -2168,3 +2205,5 @@ tr:hover td {
 </script>
 </body>
 </html>
+
+
