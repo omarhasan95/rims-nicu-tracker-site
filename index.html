@@ -10,7 +10,7 @@
   <title>RIMS NICU Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'" />
   <style>
 :root {
   --bg: #eef6fb;
@@ -875,10 +875,10 @@ tr:hover td {
 <body>
   <div id="app" class="app-shell"></div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
 (function () {
   const FIREBASE_CONFIG = {
@@ -1010,26 +1010,14 @@ tr:hover td {
   db.enablePersistence({ synchronizeTabs: true }).catch(function () {
     // ignore unsupported/private-mode persistence failures
   });
-
-  if (typeof db.disableNetwork === "function") {
-    if (navigator.onLine) {
-      db.enableNetwork().catch(function () {});
-    } else {
-      db.disableNetwork().catch(function () {});
-    }
-  }
-
   window.addEventListener("online", function () {
-    if (typeof db.enableNetwork === "function") {
-      db.enableNetwork().catch(function () {});
-    }
     setStatus("Back online. Syncing latest records...", "success");
   });
 
   window.addEventListener("offline", function () {
-    if (typeof db.disableNetwork === "function") {
-      db.disableNetwork().catch(function () {});
-    }
+    setStatus("You are offline. Showing cached data; sync resumes automatically.", "warning");
+  });
+}
     setStatus("You are offline. Showing cached data; sync resumes automatically.", "error");
   });
 
@@ -1659,7 +1647,7 @@ tr:hover td {
     );
   }
 
-  function render() {
+  function performRender() {
     let html = "";
     if (state.booting) {
       html = "<section class=\"auth-shell\"><section class=\"auth-hero\"><div class=\"brand\"><div class=\"logo-mark\"></div><div class=\"brand-copy\"><strong>RIMS NICU Tracker</strong><span>Loading Firebase session...</span></div></div><h1 class=\"auth-title\">Connecting to live cloud sync.</h1><p class=\"auth-subtitle\">Please wait while the app restores your session and Firestore subscriptions.</p></section><section class=\"surface auth-card\"><div class=\"empty\">Loading...</div></section></section>";
@@ -1682,6 +1670,17 @@ tr:hover td {
     bindEvents();
   }
 
+  let renderQueued = false;
+  function render() {
+    if (renderQueued) {
+      return;
+    }
+    renderQueued = true;
+    requestAnimationFrame(function () {
+      renderQueued = false;
+      performRender();
+    });
+  }
   function bindEvents() {
     appRoot.querySelectorAll("[data-route]").forEach(function (button) {
       button.addEventListener("click", function () {
@@ -1803,7 +1802,7 @@ tr:hover td {
           setStatus("Patient admission saved successfully.", "success");
           saveRoute("records");
         } catch (saveError) {
-          setStatus(saveError.message || "Could not save record.", "error");
+          setStatus(friendlyFirestoreError(saveError, "Could not save record."), "error");
         }
         state.loading = false;
         render();
@@ -2205,5 +2204,8 @@ tr:hover td {
 </script>
 </body>
 </html>
+
+
+
 
 
