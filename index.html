@@ -1010,15 +1010,13 @@ tr:hover td {
   db.enablePersistence({ synchronizeTabs: true }).catch(function () {
     // ignore unsupported/private-mode persistence failures
   });
+
   window.addEventListener("online", function () {
     setStatus("Back online. Syncing latest records...", "success");
   });
 
   window.addEventListener("offline", function () {
     setStatus("You are offline. Showing cached data; sync resumes automatically.", "warning");
-  });
-}
-    setStatus("You are offline. Showing cached data; sync resumes automatically.", "error");
   });
 
   function getSavedRoute() {
@@ -1112,7 +1110,7 @@ tr:hover td {
   function friendlyFirestoreError(error, fallback) {
     const code = String(error && error.code || "");
     const msg = String(error && error.message || "");
-    if (code.indexOf("unavailable") !== -1 || /client is offline/i.test(msg)) {
+    if (!navigator.onLine || code.indexOf("unavailable") !== -1 || /client is offline/i.test(msg)) {
       return "You are offline. Showing cached data; syncing resumes when internet returns.";
     }
     return fallback || msg || "Unexpected error.";
@@ -2204,6 +2202,7 @@ tr:hover td {
 </script>
 </body>
 </html>
+
 
 
 
