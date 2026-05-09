@@ -870,6 +870,46 @@ tr:hover td {
   }
 }
 
+
+.status-toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  max-width: min(92vw, 420px);
+  z-index: 9999;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.14);
+}
+
+@media (max-width: 900px) {
+  .btn { min-height: 44px; }
+  .row { flex-wrap: wrap; gap: 10px; }
+  .topbar-actions { gap: 8px; }
+  .nav {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    gap: 8px;
+    padding-bottom: 2px;
+  }
+  .nav button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-shell { padding: 10px; }
+  .card, .surface { border-radius: 16px; }
+  .page-header h2 { font-size: 1.35rem; }
+  .status-toast {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    max-width: none;
+  }
+}
 </style>
 </head>
 <body>
@@ -977,6 +1017,8 @@ tr:hover td {
     authStatusType: "",
     globalStatus: "",
     globalStatusType: "",
+    formError: "",
+    lastSyncAt: "",
     loading: false,
     booting: true,
     currentUser: null,
@@ -1670,6 +1712,7 @@ tr:hover td {
   }
 
   let renderQueued = false;
+  let statusTimer = null;
   function render() {
     if (renderQueued) {
       return;
@@ -2148,6 +2191,7 @@ tr:hover td {
     });
 
     const recordsUnsub = db.collection("records").onSnapshot(function (snapshot) {
+      state.lastSyncAt = new Date().toISOString();
       state.records = snapshot.docs.map(function (doc) {
         return normalizeRecord(Object.assign({ id: doc.id }, doc.data()));
       }).sort(function (a, b) {
@@ -2216,6 +2260,11 @@ tr:hover td {
 </script>
 </body>
 </html>
+
+
+
+
+
 
 
 
