@@ -3,2275 +3,745 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta
-    name="description"
-    content="RIMS NICU Tracker with Firebase Authentication, Google sign-in, Firestore live sync, flexible admissions, and Excel export."
-  />
+  <meta name="description" content="RIMS NICU Tracker with Supabase auth, live neonatal records, analytics, reports, and demo mode." />
   <title>RIMS NICU Tracker</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-:root {
-  --bg: #eef6fb;
-  --bg-2: #e3eff8;
-  --surface: rgba(255, 255, 255, 0.92);
-  --surface-strong: #ffffff;
-  --surface-soft: #f5fbff;
-  --line: #d9e6ef;
-  --line-strong: #bdd4e3;
-  --text: #163246;
-  --muted: #698396;
-  --primary: #1f86c7;
-  --primary-2: #38b6a6;
-  --success: #1f8b67;
-  --warning: #b77c1e;
-  --danger: #c74662;
-  --shadow: 0 20px 48px rgba(22, 50, 70, 0.12);
-  --radius: 24px;
-  --sidebar: 292px;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  min-height: 100%;
-  font-family: "Inter", system-ui, sans-serif;
-  color: var(--text);
-  background: linear-gradient(180deg, var(--bg), var(--bg-2));
-}
-
-body {
-  overflow-x: hidden;
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-  border: none;
-}
-
-h1,
-h2,
-h3,
-h4,
-p {
-  margin: 0;
-}
-
-a {
-  color: inherit;
-}
-
-.hidden {
-  display: none !important;
-}
-
-.app-shell {
-  min-height: 100vh;
-}
-
-.auth-shell {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: 24px;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 28px;
-}
-
-.surface {
-  background: var(--surface);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: var(--shadow);
-  border-radius: var(--radius);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.logo-mark {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  box-shadow: 0 14px 30px rgba(31, 134, 199, 0.24);
-  position: relative;
-  flex: none;
-}
-
-.logo-mark::before,
-.logo-mark::after {
-  content: "";
-  position: absolute;
-  background: #fff;
-  border-radius: 999px;
-}
-
-.logo-mark::before {
-  width: 12px;
-  height: 30px;
-  left: 18px;
-  top: 9px;
-}
-
-.logo-mark::after {
-  width: 30px;
-  height: 12px;
-  left: 9px;
-  top: 18px;
-}
-
-.brand-copy strong {
-  display: block;
-  font-size: 1rem;
-}
-
-.brand-copy span {
-  display: block;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-.auth-hero {
-  padding: 32px;
-  border-radius: 32px;
-  background: linear-gradient(150deg, rgba(31, 134, 199, 0.13), rgba(56, 182, 166, 0.14), rgba(255, 255, 255, 0.78));
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  position: relative;
-  overflow: hidden;
-}
-
-.auth-hero::before,
-.auth-hero::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.auth-hero::before {
-  width: 340px;
-  height: 340px;
-  right: -100px;
-  top: -70px;
-  background: radial-gradient(circle, rgba(56, 182, 166, 0.18), transparent 68%);
-}
-
-.auth-hero::after {
-  width: 280px;
-  height: 280px;
-  left: -80px;
-  bottom: -100px;
-  background: radial-gradient(circle, rgba(31, 134, 199, 0.14), transparent 68%);
-}
-
-.eyebrow,
-.pill,
-.tag,
-.outcome-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.eyebrow {
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.auth-title {
-  margin-top: 18px;
-  font-size: clamp(2rem, 4vw, 3.4rem);
-  line-height: 1.03;
-  max-width: 760px;
-}
-
-.auth-subtitle {
-  margin-top: 14px;
-  color: var(--muted);
-  line-height: 1.7;
-  max-width: 780px;
-}
-
-.hero-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 28px;
-}
-
-.hero-stat,
-.metric {
-  padding: 16px;
-  border-radius: 18px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.86);
-}
-
-.hero-stat .k,
-.metric .k {
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 700;
-}
-
-.hero-stat .v,
-.metric .v {
-  margin-top: 8px;
-  font-size: 1.6rem;
-  font-weight: 800;
-}
-
-.hero-stat .s,
-.metric .s {
-  margin-top: 5px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.auth-card,
-.card,
-.table-card,
-.sheet-card,
-.topbar,
-.sidebar {
-  padding: 22px;
-}
-
-.auth-card {
-  display: grid;
-  gap: 18px;
-  align-self: center;
-}
-
-.segmented {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 6px;
-  border-radius: 16px;
-  background: #f3fbff;
-  border: 1px solid var(--line);
-}
-
-.segmented button {
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--muted);
-  font-weight: 700;
-}
-
-.segmented button.active {
-  background: #fff;
-  color: var(--text);
-  box-shadow: 0 8px 18px rgba(22, 50, 70, 0.07);
-}
-
-.field-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.field-grid.three {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.field {
-  display: grid;
-  gap: 7px;
-}
-
-.field.full {
-  grid-column: 1 / -1;
-}
-
-label {
-  font-size: 13px;
-  font-weight: 700;
-}
-
-input,
-select,
-textarea {
-  width: 100%;
-  padding: 12px 13px;
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--text);
-  outline: none;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(31, 134, 199, 0.12);
-}
-
-textarea {
-  min-height: 96px;
-  resize: vertical;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border-radius: 16px;
-  font-weight: 700;
-  transition: 0.18s transform, 0.18s opacity, 0.18s background;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  color: #fff;
-  box-shadow: 0 12px 28px rgba(31, 134, 199, 0.22);
-}
-
-.btn-secondary {
-  background: #fff;
-  border: 1px solid var(--line);
-  color: var(--text);
-}
-
-.btn-ghost {
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px dashed var(--line-strong);
-  color: var(--muted);
-}
-
-.btn-danger {
-  background: #fff2f5;
-  border: 1px solid #f0d0d9;
-  color: #af3b57;
-}
-
-.btn-sm {
-  padding: 8px 11px;
-  border-radius: 12px;
-  font-size: 12px;
-}
-
-.row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.stack {
-  display: grid;
-  gap: 12px;
-}
-
-.tiny {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.6;
-}
-
-.muted {
-  color: var(--muted);
-}
-
-.status {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.status.success {
-  color: var(--success);
-}
-
-.status.error {
-  color: var(--danger);
-}
-
-.status.warning {
-  color: var(--warning);
-}
-
-.auth-help,
-.section-note {
-  padding: 16px;
-  border-radius: 18px;
-  background: var(--surface-soft);
-  border: 1px solid var(--line);
-}
-
-.main-shell {
-  display: grid;
-  grid-template-columns: var(--sidebar) 1fr;
-  min-height: 100vh;
-}
-
-.sidebar {
-  margin: 18px 0 18px 18px;
-  display: grid;
-  grid-template-rows: auto auto 1fr auto;
-  gap: 18px;
-  position: sticky;
-  top: 18px;
-  height: calc(100vh - 36px);
-}
-
-.sidebar-meta {
-  display: grid;
-  gap: 12px;
-}
-
-.pill {
-  background: #eef8ff;
-  color: #2a6f99;
-  border: 1px solid #d4e7f5;
-}
-
-.pill.admin {
-  background: #eefbf5;
-  color: #1f7a5c;
-  border-color: #d4eedf;
-}
-
-.pill.locked {
-  background: #fff6e8;
-  color: #8b671d;
-  border-color: #efdcae;
-}
-
-.nav {
-  display: grid;
-  gap: 8px;
-}
-
-.nav button {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 13px 14px;
-  border-radius: 16px;
-  background: transparent;
-  color: var(--muted);
-  font-weight: 700;
-  text-align: left;
-}
-
-.nav button.active {
-  background: linear-gradient(135deg, rgba(31, 134, 199, 0.12), rgba(56, 182, 166, 0.13));
-  color: var(--text);
-  border: 1px solid var(--line);
-}
-
-.content {
-  padding: 18px 18px 24px;
-  min-width: 0;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 14px;
-}
-
-.topbar-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.page {
-  display: grid;
-  gap: 18px;
-  margin-top: 18px;
-}
-
-.page-header {
-  padding: 26px;
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
-  background: linear-gradient(135deg, rgba(31, 134, 199, 0.1), rgba(56, 182, 166, 0.12), rgba(255, 255, 255, 0.8));
-  position: relative;
-  overflow: hidden;
-}
-
-.page-header::after {
-  content: "";
-  position: absolute;
-  width: 280px;
-  height: 280px;
-  right: -60px;
-  bottom: -140px;
-  background: radial-gradient(circle, rgba(56, 182, 166, 0.16), transparent 62%);
-}
-
-.page-header h2 {
-  font-size: clamp(1.5rem, 3vw, 2.4rem);
-}
-
-.page-header p {
-  margin-top: 10px;
-  color: var(--muted);
-  max-width: 860px;
-  line-height: 1.68;
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 18px;
-}
-
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 18px;
-}
-
-.grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-
-.card-head p {
-  margin-top: 6px;
-  color: var(--muted);
-  line-height: 1.6;
-}
-
-.list {
-  margin: 0;
-  padding-left: 18px;
-  color: var(--muted);
-  line-height: 1.7;
-}
-
-.toolbar {
-  display: grid;
-  grid-template-columns: 1.1fr repeat(4, minmax(140px, 0.55fr)) auto auto;
-  gap: 10px;
-  align-items: center;
-}
-
-.table-wrap,
-.sheet-preview {
-  overflow: auto;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: #fff;
-}
-
-.desktop-only {
-  display: block;
-}
-
-.mobile-only {
-  display: none;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 1400px;
-}
-
-th,
-td {
-  padding: 12px;
-  border-bottom: 1px solid #edf3f7;
-  text-align: left;
-  font-size: 13px;
-  vertical-align: top;
-}
-
-th {
-  position: sticky;
-  top: 0;
-  background: #f8fcff;
-  color: var(--muted);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-tr:hover td {
-  background: #fbfeff;
-}
-
-.tag {
-  background: #f3fbff;
-  border: 1px solid var(--line);
-  color: var(--muted);
-}
-
-.outcome-pill {
-  padding: 6px 10px;
-}
-
-.outcome-pill.admitted,
-.outcome-pill.ongoing {
-  background: #fff6e8;
-  color: #8b671d;
-}
-
-.outcome-pill.discharged {
-  background: #e9f8f1;
-  color: #1f7a5c;
-}
-
-.outcome-pill.death {
-  background: #fff0f4;
-  color: #ab3d58;
-}
-
-.outcome-pill.lama {
-  background: #f8f3ff;
-  color: #6951a7;
-}
-
-.outcome-pill.transfer-out,
-.outcome-pill.referral {
-  background: #edf6ff;
-  color: #295f93;
-}
-
-.empty {
-  padding: 26px;
-  border-radius: 18px;
-  border: 1px dashed var(--line-strong);
-  background: var(--surface-soft);
-  text-align: center;
-  color: var(--muted);
-}
-
-.summary-table table {
-  min-width: 1800px;
-}
-
-.summary-table th:first-child,
-.summary-table td:first-child {
-  position: sticky;
-  left: 0;
-  background: #fff;
-  z-index: 1;
-}
-
-.summary-table th:first-child {
-  background: #f8fcff;
-  z-index: 2;
-}
-
-.sheet-preview table {
-  min-width: 1600px;
-}
-
-.record-card-list {
-  display: grid;
-  gap: 12px;
-}
-
-.record-card {
-  padding: 16px;
-  border-radius: 18px;
-  border: 1px solid var(--line);
-  background: #fff;
-}
-
-.record-card-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: flex-start;
-}
-
-.record-card-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.record-card-grid .tiny strong {
-  display: block;
-  color: var(--text);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 3px;
-}
-
-.loading {
-  opacity: 0.65;
-  pointer-events: none;
-}
-
-.footer-note {
-  text-align: center;
-  color: var(--muted);
-  font-size: 13px;
-  padding: 8px 0 0;
-}
-
-@media (max-width: 1320px) {
-  .metrics {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .grid-2,
-  .grid-3 {
-    grid-template-columns: 1fr;
-  }
-
-  .toolbar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 1100px) {
-  .auth-shell,
-  .main-shell {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    position: relative;
-    top: auto;
-    height: auto;
-    margin: 18px;
-  }
-
-  .hero-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .content {
-    padding-top: 0;
-  }
-}
-
-@media (max-width: 760px) {
-  .auth-shell {
-    padding: 16px;
-  }
-
-  .auth-hero,
-  .auth-card,
-  .page-header,
-  .card,
-  .table-card,
-  .sheet-card,
-  .metric,
-  .topbar {
-    border-radius: 20px;
-  }
-
-  .auth-title {
-    font-size: 2rem;
-  }
-
-  .page-header {
-    padding: 20px;
-  }
-
-  .field-grid,
-  .field-grid.three,
-  .hero-grid,
-  .metrics,
-  .toolbar {
-    grid-template-columns: 1fr;
-  }
-
-  .topbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .topbar-actions {
-    width: 100%;
-  }
-
-  .topbar-actions .btn,
-  .topbar-actions .tag {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .content,
-  .sidebar {
-    margin: 0;
-    padding: 16px;
-  }
-
-  .sidebar {
-    border-radius: 0;
-  }
-
-  .desktop-only {
-    display: none;
-  }
-
-  .mobile-only {
-    display: block;
-  }
-
-  .record-card-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-
-.status-toast {
-  position: fixed;
-  right: 16px;
-  bottom: 16px;
-  max-width: min(92vw, 420px);
-  z-index: 9999;
-  box-shadow: 0 12px 28px rgba(0,0,0,0.14);
-}
-
-@media (max-width: 900px) {
-  .btn { min-height: 44px; }
-  .row { flex-wrap: wrap; gap: 10px; }
-  .topbar-actions { gap: 8px; }
-  .nav {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    gap: 8px;
-    padding-bottom: 2px;
-  }
-  .nav button {
-    flex: 0 0 auto;
-    white-space: nowrap;
-  }
-}
-
-@media (max-width: 640px) {
-  .app-shell { padding: 10px; }
-  .card, .surface { border-radius: 16px; }
-  .page-header h2 { font-size: 1.35rem; }
-  .status-toast {
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-    max-width: none;
-  }
-}
+    :root{
+      --bg:#eff7fb;
+      --bg-2:#e8f2f8;
+      --surface:rgba(255,255,255,.9);
+      --surface-strong:#ffffff;
+      --surface-soft:#f6fbfe;
+      --line:#d9e7ef;
+      --line-strong:#bfd7e5;
+      --text:#163246;
+      --muted:#647f92;
+      --primary:#2d91cb;
+      --primary-2:#52c3bf;
+      --accent:#7eb7ff;
+      --success:#24896d;
+      --warning:#c78322;
+      --danger:#cf4f69;
+      --shadow:0 18px 48px rgba(30,96,132,.12);
+      --radius:24px;
+      --radius-sm:16px;
+      --sidebar:280px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;min-height:100%;font-family:'Inter',system-ui,sans-serif;color:var(--text);background:linear-gradient(180deg,var(--bg),var(--bg-2));}
+    body{overflow-x:hidden}
+    a{color:inherit}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer;border:none}
+    .hidden{display:none!important}
+    .app-shell{min-height:100vh}
+    .auth-shell{min-height:100vh;display:grid;grid-template-columns:1.1fr .9fr;gap:24px;padding:28px;max-width:1440px;margin:0 auto;align-items:stretch}
+    .glass,.panel,.card,.metric,.chart-card,.table-card,.sidebar,.topbar,.auth-card,.report-preview{background:var(--surface);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.72);box-shadow:var(--shadow)}
+    .hero-panel,.auth-card,.card,.sidebar,.topbar,.chart-card,.table-card,.report-preview{border-radius:var(--radius)}
+    .brand{display:flex;align-items:center;gap:14px}
+    .logo-mark{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--primary-2));position:relative;box-shadow:0 12px 26px rgba(45,145,203,.22);flex:none}
+    .logo-mark:before,.logo-mark:after{content:'';position:absolute;background:#fff;border-radius:999px;opacity:.95}
+    .logo-mark:before{width:10px;height:30px;left:18px;top:8px}
+    .logo-mark:after{width:30px;height:10px;left:8px;top:18px}
+    .brand-copy strong{display:block;font-size:1rem}
+    .brand-copy span{display:block;color:var(--muted);font-size:.9rem}
+    .auth-hero{padding:30px;border-radius:32px;background:linear-gradient(150deg,rgba(45,145,203,.12),rgba(82,195,191,.12),rgba(126,183,255,.08)),var(--surface-strong);position:relative;overflow:hidden}
+    .auth-hero:before,.auth-hero:after{content:'';position:absolute;border-radius:50%;pointer-events:none}
+    .auth-hero:before{width:320px;height:320px;right:-90px;top:-60px;background:radial-gradient(circle,rgba(82,195,191,.20),transparent 68%)}
+    .auth-hero:after{width:260px;height:260px;left:-70px;bottom:-80px;background:radial-gradient(circle,rgba(126,183,255,.16),transparent 66%)}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+    h1,h2,h3,h4,p{margin:0}
+    .auth-title{margin-top:18px;font-size:clamp(2.2rem,4vw,3.6rem);line-height:1.03;max-width:700px}
+    .auth-subtitle{margin-top:14px;color:var(--muted);line-height:1.7;max-width:720px}
+    .hero-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:26px}
+    .hero-stat{padding:16px;border-radius:20px;background:rgba(255,255,255,.84);border:1px solid var(--line)}
+    .hero-stat .k{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+    .hero-stat .v{font-size:1.6rem;font-weight:800;margin-top:8px}
+    .hero-stat .s{font-size:12px;color:var(--muted);margin-top:4px}
+    .auth-card{padding:24px;display:grid;gap:18px;align-self:center}
+    .segmented{display:flex;gap:8px;flex-wrap:wrap;background:#f4fbff;padding:6px;border-radius:16px;border:1px solid var(--line)}
+    .segmented button{padding:10px 14px;border-radius:12px;background:transparent;font-weight:700;color:var(--muted)}
+    .segmented button.active{background:#fff;color:var(--text);box-shadow:0 6px 18px rgba(22,50,70,.07)}
+    .field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .field{display:grid;gap:7px}
+    .field.full{grid-column:1/-1}
+    label{font-size:13px;font-weight:700}
+    input,select,textarea{width:100%;padding:12px 13px;border-radius:14px;border:1px solid var(--line);background:#fff;color:var(--text);outline:none}
+    input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(45,145,203,.12)}
+    textarea{min-height:96px;resize:vertical}
+    .btn{padding:12px 16px;border-radius:16px;font-weight:700;transition:.18s transform,.18s opacity,.18s background}
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-2));box-shadow:0 12px 26px rgba(45,145,203,.22)}
+    .btn-secondary{background:#fff;border:1px solid var(--line);color:var(--text)}
+    .btn-danger{background:#fff1f4;border:1px solid #f3d0d8;color:#b13e58}
+    .btn-ghost{background:rgba(255,255,255,.65);border:1px dashed var(--line-strong);color:var(--muted)}
+    .btn-sm{padding:8px 11px;border-radius:12px;font-weight:700;font-size:12px}
+    .stack{display:grid;gap:12px}
+    .status{font-size:13px;color:var(--muted)}
+    .status.error{color:var(--danger)}
+    .status.success{color:var(--success)}
+    .muted{color:var(--muted)}
+    .tiny{font-size:12px;color:var(--muted);line-height:1.6}
+    .auth-help{padding:16px;border-radius:18px;background:var(--surface-soft);border:1px solid var(--line)}
+    .main-shell{display:grid;grid-template-columns:var(--sidebar) 1fr;min-height:100vh}
+    .sidebar{margin:18px 0 18px 18px;padding:20px;display:grid;grid-template-rows:auto auto 1fr auto;gap:18px;position:sticky;top:18px;height:calc(100vh - 36px)}
+    .sidebar-meta{display:grid;gap:12px}
+    .mode-pill,.info-pill,.kpi-chip,.tag,.outcome-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;font-weight:700;font-size:12px}
+    .mode-pill{background:#eef8ff;color:#246991;border:1px solid #d7eaf6}
+    .mode-pill.demo{background:#fff6e7;color:#8d651f;border-color:#f1dfbb}
+    .nav{display:grid;gap:8px}
+    .nav button{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:16px;background:transparent;color:var(--muted);font-weight:700;text-align:left}
+    .nav button.active{background:linear-gradient(135deg,rgba(45,145,203,.12),rgba(82,195,191,.12));color:var(--text);border:1px solid var(--line)}
+    .content{padding:18px 18px 24px 18px;min-width:0}
+    .topbar{padding:16px 18px;display:flex;justify-content:space-between;gap:14px;align-items:center}
+    .topbar-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .page{display:grid;gap:18px;margin-top:18px}
+    .page-header{padding:26px;background:linear-gradient(135deg,rgba(45,145,203,.1),rgba(82,195,191,.12),rgba(255,255,255,.8));border-radius:var(--radius);border:1px solid var(--line);position:relative;overflow:hidden}
+    .page-header:after{content:'';position:absolute;width:280px;height:280px;right:-60px;bottom:-140px;background:radial-gradient(circle,rgba(82,195,191,.16),transparent 62%)}
+    .page-header h2{font-size:clamp(1.5rem,3vw,2.4rem)}
+    .page-header p{margin-top:10px;color:var(--muted);max-width:820px;line-height:1.65}
+    .header-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
+    .metric{padding:18px;border-radius:22px}
+    .metric .k{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+    .metric .v{margin-top:8px;font-size:1.9rem;font-weight:800}
+    .metric .s{margin-top:6px;color:var(--muted);font-size:12px}
+    .grid-2{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+    .card{padding:22px}
+    .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+    .card-head p{color:var(--muted);margin-top:6px;line-height:1.6}
+    .quick-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .insights{display:grid;gap:10px;padding:0;margin:0;list-style:none}
+    .insights li{padding:13px 14px;border-radius:14px;background:#fff;border:1px solid var(--line);line-height:1.55}
+    .chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .chart-card{padding:18px;border-radius:22px}
+    .chart-wrap{position:relative;height:250px}
+    canvas{width:100%;height:100%;display:block}
+    .table-card{padding:22px;border-radius:24px}
+    .toolbar{display:grid;grid-template-columns:1.2fr repeat(3,minmax(140px,.5fr)) auto auto;gap:10px;align-items:center;margin-bottom:14px}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:#fff}
+    table{width:100%;border-collapse:collapse;min-width:1180px}
+    th,td{padding:12px;border-bottom:1px solid #edf3f7;text-align:left;font-size:13px;vertical-align:top}
+    th{background:#f8fcff;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;position:sticky;top:0}
+    tr:hover td{background:#fbfeff}
+    .sort{font-size:11px;color:var(--primary);margin-left:5px}
+    .outcome-pill{padding:6px 10px}
+    .outcome-pill.discharged{background:#eaf8f1;color:#247557}
+    .outcome-pill.referred{background:#edf7ff;color:#246991}
+    .outcome-pill.deceased{background:#fff0f3;color:#a63f57}
+    .outcome-pill.ongoing{background:#fff6e7;color:#8f671d}
+    .tag{background:#f3fbff;border:1px solid var(--line);color:var(--muted)}
+    .empty{padding:26px;border-radius:18px;border:1px dashed var(--line-strong);background:var(--surface-soft);text-align:center;color:var(--muted)}
+    .chips{display:flex;gap:10px;flex-wrap:wrap}
+    .kpi-chip{background:#f3fbff;border:1px solid var(--line);color:var(--muted)}
+    .reports-grid{display:grid;grid-template-columns:320px 1fr;gap:18px}
+    .report-list{display:grid;gap:10px}
+    .report-item{padding:14px;border-radius:16px;border:1px solid var(--line);background:#fff;cursor:pointer}
+    .report-item.active{background:linear-gradient(135deg,rgba(45,145,203,.12),rgba(82,195,191,.12));border-color:#cfe5f1}
+    .report-preview{padding:24px;border-radius:24px;background:#fff}
+    .report-brand{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;padding-bottom:14px;border-bottom:2px solid #dbe8ef}
+    .report-title{margin-top:18px;font-size:1.45rem;font-weight:800}
+    .report-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+    .report-box{padding:14px;border-radius:16px;background:#f8fcff;border:1px solid var(--line)}
+    .report-table{width:100%;min-width:0}
+    .report-table th{position:static;background:#f5fafe}
+    .setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .code{padding:14px;border-radius:16px;background:#0f2230;color:#dff4ff;font-size:12px;line-height:1.6;overflow:auto}
+    .list{margin:0;padding-left:18px;color:var(--muted);line-height:1.7}
+    .about-grid{display:grid;grid-template-columns:1fr .9fr;gap:18px}
+    .footer-note{text-align:center;color:var(--muted);font-size:13px;padding:8px 0 0}
+    .overlay{position:fixed;inset:0;background:rgba(10,20,30,.45);display:flex;align-items:center;justify-content:center;padding:18px;z-index:40}
+    .modal{width:min(860px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:24px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.18)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .right{text-align:right}
+    .loading{opacity:.65;pointer-events:none}
+    .dot{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block}
+    @media (max-width:1320px){
+      .metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .grid-2,.reports-grid,.about-grid,.setup-grid{grid-template-columns:1fr}
+    }
+    @media (max-width:1100px){
+      .auth-shell,.main-shell{grid-template-columns:1fr}
+      .sidebar{position:relative;top:auto;height:auto;margin:18px}
+      .content{padding-top:0}
+      .hero-stats,.chart-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .toolbar{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:760px){
+      .field-grid,.split,.hero-stats,.metrics,.chart-grid,.grid-3{grid-template-columns:1fr}
+      .toolbar{grid-template-columns:1fr}
+      .topbar,.brand,.topbar-actions{align-items:flex-start}
+      .topbar{flex-direction:column}
+      .auth-shell{padding:16px}
+      .content,.sidebar{margin:0;padding:16px}
+      .sidebar{border-radius:0}
+    }
+    @media print{
+      body *{visibility:hidden}
+      .print-target,.print-target *{visibility:visible}
+      .print-target{position:absolute;left:0;top:0;width:100%;background:#fff;box-shadow:none;border:none}
+    }
+  </style>
+  
+  
+  <script type="application/ld+json">
+{
+  "@context": "urn:goose.ai:schema",
+  "@type": "GooseApp",
+  "name": "nicu-tracker-dashboard",
+  "description": "Multi-page NICU tracker with Supabase auth, live analytics, reports, and demo mode.",
+  "width": 1540,
+  "height": 980,
+  "resizable": true,
+  "mcpServers": [
+    "apps"
+  ]
+}
+  </script>
+<style id="goose-smooth-enhancements">
+.smooth-clock{position:fixed;top:14px;right:16px;z-index:9999;padding:9px 14px;border-radius:999px;background:rgba(16,24,40,.82);backdrop-filter:blur(8px);color:#fff;font:700 13px/1 Inter,Segoe UI,Arial;box-shadow:0 10px 30px rgba(0,0,0,.25);letter-spacing:.2px}
+.card,.panel,.stat-card,section{transition:transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, filter .35s ease}
+.card:hover,.panel:hover,.stat-card:hover,section:hover{transform:translateY(-3px); box-shadow:0 14px 36px rgba(26,67,103,.16)}
+canvas{transition:filter .35s ease, transform .35s ease}
+canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
+@keyframes softFloat{0%{transform:translateY(0)}50%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+.logo,.brand,.header-title{animation:softFloat 4.8s ease-in-out infinite}
 </style>
 </head>
-<body>
+<body>\r\n<div id="smoothClock" class="smooth-clock" aria-live="polite"></div>
   <div id="app" class="app-shell"></div>
-
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
-(function () {
-  const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyDmXEcKQ8q4BcILBk9zTp-WHbjurT4QW8c",
-    authDomain: "new-id-login.firebaseapp.com",
-    projectId: "new-id-login",
-    storageBucket: "new-id-login.firebasestorage.app",
-    messagingSenderId: "379189108213",
-    appId: "1:379189108213:web:28cc966ac16ec8f364d4bc",
-    measurementId: "G-QEPQG6PHE8"
-  };
-
-  const KEYS = {
-    route: "nicu_route_v4",
-    draft: "nicu_record_draft_v4"
-  };
-
-  const ROUTES = ["dashboard", "admission", "records", "reports", "settings", "about"];
-  const OUTCOMES = ["Admitted", "Ongoing", "Discharged", "LAMA", "Transfer Out", "Referral", "Death"];
-  const CLOSED_OUTCOMES = ["Discharged", "LAMA", "Transfer Out", "Referral", "Death"];
-  const UNITS = ["NICU", "SNCU"];
-  const SOURCES = ["Direct Admission", "Transfer in"];
-  const BIRTH_ORIGINS = ["Inborn", "Outborn"];
-  const SEX_OPTIONS = ["Male", "Female", "Ambiguous", "Unknown"];
-  const DIAGNOSIS_GROUPS = ["Pre Term", "Severe Birth Asphyxia", "SEPSIS", "Respiratory Distress Syndrome (RDS)", "Others"];
-  const RESPIRATORY_SUPPORT_OPTIONS = ["None", "Oxygen", "CPAP", "HFNC", "Ventilator", "Other"];
-  const SEPSIS_STATUS_OPTIONS = ["Not suspected", "Suspected", "Culture positive", "Treated empirically"];
-  const FEEDING_TYPE_OPTIONS = ["Nil by mouth", "Breastfeeding", "EBM", "Formula", "Mixed", "IV Fluids / TPN"];
-  const DELIVERY_TYPE_OPTIONS = ["Normal vaginal delivery", "Assisted vaginal delivery", "Caesarean section", "Unknown"];
-  const STEROID_OPTIONS = ["Given", "Not given", "Unknown"];
-  const DEATH_TIMING_BUCKETS = ["<24 hrs", ">24 hrs"];
-  const DEATH_TIMING_DETAILS = [
-    "16.1.1.a New born deaths within 24 hrs (1 to 23 hrs 59 minutes) at facility / in transit",
-    "16.1.2.a New born deaths within 1 week (1 to 7 days) at facility / in transit",
-    "16.1.3.a New born deaths within 8 to 28 days at facility / in transit",
-    "16.1.4.a Infant deaths (>28 days to below 12 months) at facility / in transit"
-  ];
-  const DEATH_CAUSE_DETAILS = [
-    "16.2.1 Neonatal deaths up to 4 weeks due to Sepsis",
-    "16.2.2 Neonatal deaths up to 4 weeks due to Asphyxia",
-    "16.2.3 Neonatal deaths up to 4 weeks due to complications of Prematurity",
-    "16.2.4 Neonatal deaths up to 4 weeks due to Other causes"
-  ];
-
-  const baseSettings = {
-    hospitalName: "Regional Institute of Medical Sciences",
-    unitName: "RIMS NICU Tracker",
-    address: "NICU / SNCU Block",
-    contact: "",
-    adminEmails: []
-  };
-
-  const baseRecord = {
-    id: "",
-    patient_id: "",
-    baby_name: "",
-    sex: "",
-    dob: "",
-    admission_date: "",
-    discharge_date: "",
-    unit: "NICU",
-    bed_number: "",
-    admission_source: "Direct Admission",
-    birth_origin: "Inborn",
-    diagnosis_group: "",
-    diagnosis_detail: "",
-    gestational_age: "",
-    birth_weight: "",
-    apgar_1: "",
-    apgar_5: "",
-    respiratory_support: "",
-    sepsis_status: "",
-    feeding_type: "",
-    mother_name: "",
-    mother_age: "",
-    father_name: "",
-    contact_number: "",
-    address: "",
-    delivery_type: "",
-    antenatal_steroids: "",
-    outcome: "Admitted",
-    death_timing_bucket: "",
-    death_timing_detail: "",
-    death_cause_detail: "",
-    notes: "",
-    updated_at: "",
-    created_at: "",
-    created_by: "",
-    updated_by: ""
-  };
-
-  const state = {
-    route: getSavedRoute(),
-    authView: "signin",
-    authStatus: "",
-    authStatusType: "",
-    globalStatus: "",
-    globalStatusType: "",
-    formError: "",
-    lastSyncAt: "",
-    loading: false,
-    booting: true,
-    currentUser: null,
-    profile: null,
-    settings: { ...baseSettings },
-    records: [],
-    filters: {
-      q: "",
-      unit: "",
-      outcome: "",
-      diagnosis_group: "",
-      death_timing_bucket: ""
-    },
-    editingId: "",
-    draft: normalizeRecord(loadDraft()),
-    report: {
-      from: "",
-      to: ""
-    },
-    unsubscribers: [],
-    bootResolved: false
-  };
-
-  const appRoot = document.getElementById("app");
-  const auth = firebase.initializeApp(FIREBASE_CONFIG).auth();
-  const db = firebase.firestore();
-  const provider = new firebase.auth.GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: "select_account" });
-
-  // Offline resilience + perceived speed
-  db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
-  db.enablePersistence({ synchronizeTabs: true }).catch(function () {
-    // ignore unsupported/private-mode persistence failures
-  });
-
-  window.addEventListener("online", function () {
-    setStatus("Back online. Syncing latest records...", "success");
-  });
-
-  window.addEventListener("offline", function () {
-    setStatus("You are offline. Showing cached data; sync resumes automatically.", "warning");
-  });
-
-  function getSavedRoute() {
-    const hash = location.hash.replace("#", "").trim();
-    const stored = localStorage.getItem(KEYS.route) || "dashboard";
-    return ROUTES.includes(hash) ? hash : ROUTES.includes(stored) ? stored : "dashboard";
-  }
-
-  function saveRoute(route) {
-    state.route = ROUTES.includes(route) ? route : "dashboard";
-    localStorage.setItem(KEYS.route, state.route);
-    location.hash = state.route;
-  }
-
-  function saveDraft(record) {
-    state.draft = normalizeRecord(record);
-    localStorage.setItem(KEYS.draft, JSON.stringify(state.draft));
-  }
-
-  function loadDraft() {
-    try {
-      const raw = localStorage.getItem(KEYS.draft);
-      return raw ? JSON.parse(raw) : {};
-    } catch (error) {
-      return {};
-    }
-  }
-
-  function clearDraft() {
-    state.draft = normalizeRecord({});
-    localStorage.removeItem(KEYS.draft);
-  }
-
-  function normalizeRecord(record) {
-    const next = Object.assign({}, baseRecord, record || {});
-    next.unit = UNITS.includes(next.unit) ? next.unit : "NICU";
-    next.admission_source = SOURCES.includes(next.admission_source) ? next.admission_source : "Direct Admission";
-    next.birth_origin = BIRTH_ORIGINS.includes(next.birth_origin) ? next.birth_origin : "Inborn";
-    next.outcome = OUTCOMES.includes(next.outcome) ? next.outcome : "Admitted";
-    next.gestational_age = toNumericOrEmpty(next.gestational_age);
-    next.birth_weight = toNumericOrEmpty(next.birth_weight);
-    next.apgar_1 = toNumericOrEmpty(next.apgar_1);
-    next.apgar_5 = toNumericOrEmpty(next.apgar_5);
-    next.mother_age = toNumericOrEmpty(next.mother_age);
-
-    if (next.outcome !== "Death") {
-      next.death_timing_bucket = "";
-      next.death_timing_detail = "";
-      next.death_cause_detail = "";
-    }
-
-    if (!CLOSED_OUTCOMES.includes(next.outcome)) {
-      next.discharge_date = "";
-    }
-
-    return next;
-  }
-
-  function toNumericOrEmpty(value) {
-    if (value === "" || value == null) {
-      return "";
-    }
-    const number = Number(value);
-    return Number.isFinite(number) ? number : "";
-  }
-
-  function currentEmail() {
-    return String(state.currentUser && state.currentUser.email || "").trim().toLowerCase();
-  }
-
-  function isAdmin() {
-    return !!(state.profile && state.profile.role === "admin");
-  }
-
-  function setStatus(message, type, scope) {
-    if (scope === "auth") {
-      state.authStatus = message || "";
-      state.authStatusType = type || "";
-    } else {
-      state.globalStatus = message || "";
-      state.globalStatusType = type || "";
-    }
-    render();
-  }
-
-  function clearGlobalStatus() {
-    state.globalStatus = "";
-    state.globalStatusType = "";
-  }
-
-  function friendlyFirestoreError(error, fallback) {
-    const code = String(error && error.code || "");
-    const msg = String(error && error.message || "");
-    if (!navigator.onLine || code.indexOf("unavailable") !== -1 || /client is offline/i.test(msg)) {
-      return "You are offline. Showing cached data; syncing resumes when internet returns.";
-    }
-    return fallback || msg || "Unexpected error.";
-  }
-
-  function escapeHtml(value) {
-    return String(value == null ? "" : value).replace(/[&<>"']/g, function (char) {
-      return {
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        "\"": "&quot;",
-        "'": "&#39;"
-      }[char];
-    });
-  }
-
-  function safeAttr(value) {
-    return escapeHtml(value).replace(/"/g, "&quot;");
-  }
-
-  function uid(prefix) {
-    return (prefix || "rec") + "-" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-5);
-  }
-
-  function autoPatientId() {
-    const now = new Date();
-    return "NICU-" + now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + String(Math.floor(Math.random() * 9000) + 1000);
-  }
-
-  function fmtDate(value) {
-    if (!value) {
-      return "â€”";
-    }
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
-  }
-
-  function fmtInt(value) {
-    return Number(value || 0).toLocaleString();
-  }
-
-  function monthLabel(dateString) {
-    if (!dateString) {
-      return "";
-    }
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) {
-      return "";
-    }
-    return date.toLocaleString("en-US", { month: "long" }).toUpperCase();
-  }
-
-  function outcomeClass(outcome) {
-    return String(outcome || "Ongoing").toLowerCase().replace(/\s+/g, "-");
-  }
-
-  function optionMarkup(options, value, placeholder) {
-    const first = placeholder ? "<option value=\"\">" + escapeHtml(placeholder) + "</option>" : "";
-    return first + options.map(function (option) {
-      return "<option value=\"" + safeAttr(option) + "\"" + (option === value ? " selected" : "") + ">" + escapeHtml(option) + "</option>";
-    }).join("");
-  }
-
-  function currentRecord() {
-    if (state.editingId) {
-      const existing = state.records.find(function (item) {
-        return item.id === state.editingId;
-      });
-      if (existing) {
-        return normalizeRecord(existing);
-      }
-    }
-    return normalizeRecord(state.draft);
-  }
-
-  function filteredRecords() {
-    return state.records
-      .filter(function (record) {
-        const q = state.filters.q.trim().toLowerCase();
-        const blob = [
-          record.patient_id,
-          record.baby_name,
-          record.mother_name,
-          record.contact_number,
-          record.diagnosis_group,
-          record.diagnosis_detail
-        ].join(" ").toLowerCase();
-
-        if (q && !blob.includes(q)) {
-          return false;
-        }
-        if (state.filters.unit && record.unit !== state.filters.unit) {
-          return false;
-        }
-        if (state.filters.outcome && record.outcome !== state.filters.outcome) {
-          return false;
-        }
-        if (state.filters.diagnosis_group && record.diagnosis_group !== state.filters.diagnosis_group) {
-          return false;
-        }
-        if (state.filters.death_timing_bucket && record.death_timing_bucket !== state.filters.death_timing_bucket) {
-          return false;
-        }
-        return true;
-      })
-      .slice()
-      .sort(function (a, b) {
-        return String(b.admission_date || "").localeCompare(String(a.admission_date || ""));
-      });
-  }
-
-  function reportRecords() {
-    return state.records.filter(function (record) {
-      const fromOk = !state.report.from || String(record.admission_date || "") >= state.report.from;
-      const toOk = !state.report.to || String(record.admission_date || "") <= state.report.to;
-      return fromOk && toOk;
-    });
-  }
-
-  function dashboardStats(records) {
-    return {
-      admissions: records.length,
-      deaths: records.filter(function (item) { return item.outcome === "Death"; }).length,
-      discharges: records.filter(function (item) { return item.outcome === "Discharged"; }).length,
-      lama: records.filter(function (item) { return item.outcome === "LAMA"; }).length,
-      transfers: records.filter(function (item) { return item.outcome === "Transfer Out" || item.outcome === "Referral"; }).length,
-      ongoing: records.filter(function (item) { return item.outcome === "Admitted" || item.outcome === "Ongoing"; }).length
-    };
-  }
-
-  function monthlySummary(records) {
-    const months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
-    const summary = {};
-
-    months.forEach(function (month) {
-      summary[month] = {
-        Month: month,
-        "Direct Admission": 0,
-        "Transfer in": 0,
-        "Total No of Admission (NICU1+SNCU2)": 0,
-        "Total No of Death (inborn+ out born)": 0,
-        "Discharge": 0,
-        "LAMA": 0,
-        "Transfer out/ referral": 0,
-        "Pre Term": 0,
-        "Severe Birth Asphyxia": 0,
-        "SEPSIS": 0,
-        "Respiratory Distress Syndrome (RDS)": 0,
-        "Others": 0
+    (function(){
+      const KEYS = {
+        config:'nicu_supabase_config_v1',
+        branding:'nicu_branding_v1',
+        session:'nicu_session_v1',
+        records:'nicu_demo_records_v2',
+        route:'nicu_route_v1'
       };
-    });
+      const app = document.getElementById('app');
+      const protectedRoutes = ['dashboard','new-record','records','analytics','reports'];
+      const baseBranding = {
+        hospitalName:'Regional Institute NICU',
+        unitName:'RIMS NICU Tracker',
+        address:'123 Clinical Avenue, Neonatal Block',
+        contact:'+000 123 4567 Â· nicu@example.org'
+      };
+      const sampleRecords = [
+        {id:'1',patient_id:'NICU-2026-001',baby_name:'Baby Liam',dob:'2025-12-31',gestational_age:31,birth_weight:1480,sex:'Male',delivery_type:'Cesarean',apgar_1:5,apgar_5:8,diagnosis:'Prematurity with respiratory distress syndrome',respiratory_support:'CPAP',sepsis_status:'Risk only',feeding_type:'Tube feeding',admission_date:'2026-01-08',discharge_date:'2026-01-26',length_of_stay:18,outcome:'Discharged',mother_age:29,antenatal_steroids:'Yes',notes:'Improved on CPAP and transitioned to expressed breast milk.',created_by:'demo',created_at:'2026-01-08T10:00:00Z'},
+        {id:'2',patient_id:'NICU-2026-002',baby_name:'Baby Amina',dob:'2026-01-15',gestational_age:38,birth_weight:2950,sex:'Female',delivery_type:'Vaginal',apgar_1:7,apgar_5:9,diagnosis:'Perinatal asphyxia observation',respiratory_support:'Oxygen',sepsis_status:'No evidence',feeding_type:'Exclusive breast milk',admission_date:'2026-01-15',discharge_date:'2026-01-21',length_of_stay:6,outcome:'Discharged',mother_age:24,antenatal_steroids:'No',notes:'Observed for transient tachypnea.',created_by:'demo',created_at:'2026-01-15T10:00:00Z'},
+        {id:'3',patient_id:'NICU-2026-003',baby_name:'Baby Noah',dob:'2026-02-01',gestational_age:29,birth_weight:1120,sex:'Male',delivery_type:'Cesarean',apgar_1:4,apgar_5:7,diagnosis:'Extreme prematurity and apnea of prematurity',respiratory_support:'Mechanical Ventilation',sepsis_status:'Suspected sepsis',feeding_type:'IV fluids / NPO',admission_date:'2026-02-03',discharge_date:'',length_of_stay:27,outcome:'Ongoing',mother_age:33,antenatal_steroids:'Yes',notes:'Ventilated first 48h, slow wean in progress.',created_by:'demo',created_at:'2026-02-03T10:00:00Z'},
+        {id:'4',patient_id:'NICU-2026-004',baby_name:'Baby Grace',dob:'2026-02-07',gestational_age:36,birth_weight:2100,sex:'Female',delivery_type:'Vaginal',apgar_1:6,apgar_5:8,diagnosis:'Neonatal jaundice and feeding difficulty',respiratory_support:'None',sepsis_status:'No evidence',feeding_type:'Mixed feeds',admission_date:'2026-02-09',discharge_date:'2026-02-14',length_of_stay:5,outcome:'Discharged',mother_age:22,antenatal_steroids:'No',notes:'Phototherapy for 2 days.',created_by:'demo',created_at:'2026-02-09T10:00:00Z'},
+        {id:'5',patient_id:'NICU-2026-005',baby_name:'Baby Yusuf',dob:'2026-03-10',gestational_age:34,birth_weight:1800,sex:'Male',delivery_type:'Cesarean',apgar_1:5,apgar_5:7,diagnosis:'Prematurity with suspected early onset sepsis',respiratory_support:'CPAP',sepsis_status:'Confirmed infection',feeding_type:'Tube feeding',admission_date:'2026-03-12',discharge_date:'2026-03-26',length_of_stay:14,outcome:'Referred',mother_age:37,antenatal_steroids:'Yes',notes:'Transferred for advanced imaging and surgery review.',created_by:'demo',created_at:'2026-03-12T10:00:00Z'},
+        {id:'6',patient_id:'NICU-2026-006',baby_name:'Baby Daniel',dob:'2026-04-03',gestational_age:30,birth_weight:1350,sex:'Male',delivery_type:'Cesarean',apgar_1:3,apgar_5:6,diagnosis:'RDS with severe prematurity',respiratory_support:'Mechanical Ventilation',sepsis_status:'Suspected sepsis',feeding_type:'IV fluids / NPO',admission_date:'2026-04-05',discharge_date:'2026-04-14',length_of_stay:9,outcome:'Deceased',mother_age:26,antenatal_steroids:'Yes',notes:'Refractory respiratory failure despite escalation.',created_by:'demo',created_at:'2026-04-05T10:00:00Z'},
+        {id:'7',patient_id:'NICU-2026-007',baby_name:'Baby Sophia',dob:'2026-04-18',gestational_age:35,birth_weight:2280,sex:'Female',delivery_type:'Instrumental',apgar_1:6,apgar_5:8,diagnosis:'Transient tachypnea of newborn',respiratory_support:'HFNC',sepsis_status:'Risk only',feeding_type:'Mixed feeds',admission_date:'2026-04-21',discharge_date:'2026-04-28',length_of_stay:7,outcome:'Discharged',mother_age:28,antenatal_steroids:'No',notes:'Short HFNC support with good recovery.',created_by:'demo',created_at:'2026-04-21T10:00:00Z'}
+      ];
+      const state = {
+        route:getSavedRoute(),
+        authView:'signin',
+        authStatus:'',
+        authStatusType:'',
+        globalStatus:'',
+        globalStatusType:'',
+        loading:false,
+        session:loadJson(KEYS.session,null),
+        config:loadJson(KEYS.config,{url:'',anonKey:''}),
+        branding:loadJson(KEYS.branding,baseBranding),
+        records:loadJson(KEYS.records, sampleRecords),
+        sort:{key:'admission_date',dir:'desc'},
+        filters:{q:'',outcome:'',sex:'',support:''},
+        editingId:'',
+        report:{type:'census',from:'',to:'',patientId:''},
+        modal:''
+      };
 
-    records.forEach(function (record) {
-      const month = monthLabel(record.admission_date);
-      if (!month || !summary[month]) {
-        return;
+      function getSavedRoute(){
+        const hash = location.hash.replace('#','').trim();
+        const stored = localStorage.getItem(KEYS.route) || 'login';
+        return hash || stored || 'login';
       }
-      const bucket = summary[month];
-      bucket["Total No of Admission (NICU1+SNCU2)"] += 1;
-      if (record.admission_source === "Transfer in") {
-        bucket["Transfer in"] += 1;
-      } else {
-        bucket["Direct Admission"] += 1;
+      function saveRoute(route){ state.route = route; localStorage.setItem(KEYS.route, route); location.hash = route; }
+      function loadJson(key,fallback){ try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }catch(e){ return fallback; } }
+      function persist(key,val){ localStorage.setItem(key, JSON.stringify(val)); }
+      function uid(){ return 'r-' + Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4); }
+      function setStatus(msg,type,scope){ if(scope==='auth'){ state.authStatus=msg; state.authStatusType=type||''; } else { state.globalStatus=msg; state.globalStatusType=type||''; } render(); }
+      function clearStatus(){ state.globalStatus=''; state.globalStatusType=''; }
+      function isConfigured(){ return !!(state.config.url && state.config.anonKey); }
+      function isAuthenticated(){ return !!(state.session && (state.session.access_token || state.session.type==='demo')); }
+      function isDemo(){ return state.session && state.session.type==='demo'; }
+      function currentMode(){ return isConfigured() && !isDemo() ? 'Cloud' : 'Demo'; }
+      function escapeHtml(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
+      function num(v){ const n = Number(v); return Number.isFinite(n) ? n : 0; }
+      function avg(arr){ return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+      function pct(a,b){ return b ? (a/b)*100 : 0; }
+      function fmt1(v){ return (Math.round(v*10)/10).toFixed(1); }
+      function fmtInt(v){ return Math.round(v || 0).toLocaleString(); }
+      function fmtDate(v){ if(!v) return 'â€”'; const d = new Date(v); return isNaN(d) ? v : d.toLocaleDateString(); }
+      function outcomeClass(v){ return String(v || '').toLowerCase(); }
+      function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+      function getHeaders(auth){
+        const headers = {'Content-Type':'application/json'};
+        if(isConfigured()) headers.apikey = state.config.anonKey;
+        if(auth && state.session && state.session.access_token) headers.Authorization = 'Bearer ' + state.session.access_token;
+        return headers;
       }
-      if (record.outcome === "Death") {
-        bucket["Total No of Death (inborn+ out born)"] += 1;
-      }
-      if (record.outcome === "Discharged") {
-        bucket["Discharge"] += 1;
-      }
-      if (record.outcome === "LAMA") {
-        bucket["LAMA"] += 1;
-      }
-      if (record.outcome === "Transfer Out" || record.outcome === "Referral") {
-        bucket["Transfer out/ referral"] += 1;
-      }
-      if (DIAGNOSIS_GROUPS.includes(record.diagnosis_group)) {
-        bucket[record.diagnosis_group] += 1;
-      }
-    });
-
-    return months.map(function (month) {
-      return summary[month];
-    });
-  }
-
-  function totalRow(summaryRows) {
-    const total = { Month: "TOTAL" };
-    Object.keys(summaryRows[0] || {}).forEach(function (key) {
-      if (key !== "Month") {
-        total[key] = summaryRows.reduce(function (sum, row) {
-          return sum + Number(row[key] || 0);
-        }, 0);
-      }
-    });
-    return total;
-  }
-
-  function percentageRow(summaryRows) {
-    const totals = totalRow(summaryRows);
-    const admissions = Number(totals["Total No of Admission (NICU1+SNCU2)"] || 0);
-    const row = { Month: "PERCENTAGE" };
-    Object.keys(totals).forEach(function (key) {
-      if (key === "Month") {
-        return;
-      }
-      if (!admissions || key === "Total No of Admission (NICU1+SNCU2)") {
-        row[key] = key === "Total No of Admission (NICU1+SNCU2)" ? 100 : 0;
-        return;
-      }
-      row[key] = Number(((Number(totals[key] || 0) / admissions) * 100).toFixed(2));
-    });
-    return row;
-  }
-
-  function shell(inner) {
-    const profileLabel = isAdmin() ? "Admin" : "Staff";
-    return (
-      "<section class=\"main-shell\">" +
-        "<aside class=\"surface sidebar\">" +
-          "<div class=\"brand\"><div class=\"logo-mark\"></div><div class=\"brand-copy\"><strong>" + escapeHtml(state.settings.unitName) + "</strong><span>" + escapeHtml(state.settings.hospitalName) + "</span></div></div>" +
-          "<div class=\"sidebar-meta\">" +
-            "<span class=\"pill " + (isAdmin() ? "admin" : "") + "\">" + escapeHtml(profileLabel) + "</span>" +
-            "<span class=\"pill\">" + escapeHtml(currentEmail() || "No email") + "</span>" +
-          "</div>" +
-          "<nav class=\"nav\">" + navButton("dashboard", "Dashboard") + navButton("admission", state.editingId ? "Edit Admission" : "Add Admission") + navButton("records", "Records") + navButton("reports", "Reports") + navButton("settings", "Settings") + navButton("about", "About") + "</nav>" +
-          "<div class=\"stack\">" +
-            "<div class=\"section-note\"><p class=\"tiny\">Admissions save to Firestore in real time. Use dropdowns wherever possible so entries stay consistent for monthly reporting.</p></div>" +
-            "<button class=\"btn btn-secondary\" id=\"signOutBtn\">Sign Out</button>" +
-          "</div>" +
-        "</aside>" +
-        "<main class=\"content\">" +
-          "<section class=\"surface topbar\">" +
-            "<div><strong>" + escapeHtml(state.settings.hospitalName) + "</strong><p class=\"tiny\">" + escapeHtml(state.settings.address || "NICU / SNCU Block") + "</p></div>" +
-            "<div class=\"topbar-actions\">" +
-              "<span class=\"tag\">" + escapeHtml(state.currentUser && (state.currentUser.displayName || state.currentUser.email) || "") + "</span>" +
-              "<button class=\"btn btn-secondary\" id=\"refreshData\">Refresh</button>" +
-            "</div>" +
-          "</section>" +
-          globalStatusBlock() +
-          inner +
-          "<p class=\"footer-note\">Built for responsive NICU admission and outcome tracking.</p>" +
-        "</main>" +
-      "</section>"
-    );
-  }
-
-  function navButton(route, label) {
-    return "<button data-route=\"" + route + "\" class=\"" + (state.route === route ? "active" : "") + "\">" + escapeHtml(label) + "</button>";
-  }
-
-  function globalStatusBlock() {
-    if (!state.globalStatus) {
-      return "";
-    }
-    return "<p class=\"status " + safeAttr(state.globalStatusType) + "\">" + escapeHtml(state.globalStatus) + "</p>";
-  }
-
-  function authPage() {
-    const authCopy = state.authView === "signin"
-      ? { title: "Sign in to start admissions", button: "Sign In" }
-      : state.authView === "signup"
-        ? { title: "Create a staff account", button: "Create Account" }
-        : { title: "Reset your password", button: "Send Reset Link" };
-
-    return (
-      "<section class=\"auth-shell\">" +
-        "<section class=\"auth-hero\">" +
-          "<div class=\"brand\"><div class=\"logo-mark\"></div><div class=\"brand-copy\"><strong>RIMS NICU Tracker</strong><span>Responsive admission and outcome tracking</span></div></div>" +
-          "<span class=\"eyebrow\">NICU workflow</span>" +
-          "<h1 class=\"auth-title\">Fast admission entry, live sync, and cleaner data capture.</h1>" +
-          "<p class=\"auth-subtitle\">This build keeps the admission workflow simple, converts repetitive free-text fields into dropdowns, and works better on mobile screens during ward use.</p>" +
-          "<div class=\"hero-grid\">" +
-            heroStat("Live Sync", "Firestore", "Admissions update across users") +
-            heroStat("Mobile Ready", "Responsive", "Works in stacked layout") +
-            heroStat("Safer Input", "Dropdowns", "Fewer typing mismatches") +
-            heroStat("Reports", "Excel", "Monthly summary export") +
-          "</div>" +
-        "</section>" +
-        "<section class=\"surface auth-card\">" +
-          "<div class=\"segmented\">" +
-            authSwitch("signin", "Sign In") +
-            authSwitch("signup", "Sign Up") +
-            authSwitch("reset", "Reset") +
-          "</div>" +
-          "<h2>" + escapeHtml(authCopy.title) + "</h2>" +
-          "<form id=\"authForm\" class=\"stack\">" +
-            field("Email", "<input type=\"email\" name=\"email\" placeholder=\"name@hospital.org\" required />") +
-            (state.authView === "reset" ? "" : field("Password", "<input type=\"password\" name=\"password\" placeholder=\"Enter password\" required />")) +
-            "<button class=\"btn btn-primary\" type=\"submit\">" + escapeHtml(authCopy.button) + "</button>" +
-          "</form>" +
-          "<button class=\"btn btn-secondary\" id=\"googleSignIn\">Continue with Google</button>" +
-          (state.authStatus ? "<p class=\"status " + safeAttr(state.authStatusType) + "\">" + escapeHtml(state.authStatus) + "</p>" : "") +
-          "<div class=\"auth-help\"><p class=\"tiny\">The first signed-in user becomes admin automatically if no admin email is stored yet.</p></div>" +
-        "</section>" +
-      "</section>"
-    );
-  }
-
-  function authSwitch(view, label) {
-    return "<button type=\"button\" data-auth-view=\"" + view + "\" class=\"" + (state.authView === view ? "active" : "") + "\">" + escapeHtml(label) + "</button>";
-  }
-
-  function heroStat(label, value, subtext) {
-    return "<div class=\"hero-stat\"><div class=\"k\">" + escapeHtml(label) + "</div><div class=\"v\">" + escapeHtml(value) + "</div><div class=\"s\">" + escapeHtml(subtext) + "</div></div>";
-  }
-
-  function field(label, control, extraClass) {
-    return "<div class=\"field " + (extraClass || "") + "\"><label>" + escapeHtml(label) + "</label>" + control + "</div>";
-  }
-
-  function dashboardPage() {
-    const stats = dashboardStats(state.records);
-    const recent = filteredRecords().slice(0, 5);
-
-    return shell(
-      "<section class=\"page\">" +
-        "<section class=\"page-header\"><h2>Ward snapshot</h2><p>Admission, discharge, referral, and death activity stays visible in one place so staff can update outcomes quickly without losing report consistency.</p><div class=\"header-actions\"><button class=\"btn btn-primary\" data-route=\"admission\">Add new admission</button><button class=\"btn btn-secondary\" data-route=\"records\">Open records</button></div></section>" +
-        "<section class=\"metrics\">" +
-          metric("Admissions", stats.admissions, "All saved records") +
-          metric("Ongoing", stats.ongoing, "Admitted or under care") +
-          metric("Discharged", stats.discharges, "Completed discharges") +
-          metric("Deaths", stats.deaths, "Death outcomes") +
-          metric("Transfers", stats.transfers, "Referral or transfer out") +
-          metric("LAMA", stats.lama, "Left against advice") +
-        "</section>" +
-        "<section class=\"grid-2\">" +
-          "<section class=\"surface card\"><div class=\"card-head\"><div><h3>Recent patients</h3><p>Newest admissions first. Use edit to complete details later.</p></div></div>" + recentRecordsMarkup(recent) + "</section>" +
-          "<section class=\"surface card\"><div class=\"card-head\"><div><h3>Input guidance</h3><p>The form now favors selection over free typing.</p></div></div><ul class=\"list\"><li>Unit, source, origin, sex, diagnosis group, support, feeding, delivery, steroids, and outcomes use dropdowns.</li><li>Death details appear only when outcome is set to Death.</li><li>Discharge date is shown only for closed outcomes.</li><li>Drafts stay on this device until you save the admission.</li></ul></section>" +
-        "</section>" +
-      "</section>"
-    );
-  }
-
-  function metric(label, value, subtext) {
-    return "<section class=\"surface metric\"><div class=\"k\">" + escapeHtml(label) + "</div><div class=\"v\">" + escapeHtml(fmtInt(value)) + "</div><div class=\"s\">" + escapeHtml(subtext) + "</div></section>";
-  }
-
-  function recentRecordsMarkup(records) {
-    if (!records.length) {
-      return "<div class=\"empty\">No admissions saved yet.</div>";
-    }
-    return "<div class=\"record-card-list\">" + records.map(recordCard).join("") + "</div>";
-  }
-
-  function recordCard(record) {
-    return (
-      "<article class=\"record-card\">" +
-        "<div class=\"record-card-head\"><div><strong>" + escapeHtml(record.baby_name || "Unnamed baby") + "</strong><p class=\"tiny\">" + escapeHtml(record.patient_id || "Auto ID on save") + "</p></div><span class=\"outcome-pill " + outcomeClass(record.outcome) + "\">" + escapeHtml(record.outcome) + "</span></div>" +
-        "<div class=\"record-card-grid\">" +
-          cardMeta("Admission date", fmtDate(record.admission_date)) +
-          cardMeta("Unit", record.unit || "â€”") +
-          cardMeta("Mother", record.mother_name || "â€”") +
-          cardMeta("Diagnosis", record.diagnosis_group || "â€”") +
-        "</div>" +
-        "<div class=\"row\" style=\"margin-top:12px\"><button class=\"btn btn-secondary btn-sm\" data-edit=\"" + safeAttr(record.id) + "\">Edit</button></div>" +
-      "</article>"
-    );
-  }
-
-  function cardMeta(label, value) {
-    return "<div class=\"tiny\"><strong>" + escapeHtml(label) + "</strong>" + escapeHtml(value) + "</div>";
-  }
-
-  function recordFormPage() {
-    const record = currentRecord();
-    const isDeath = record.outcome === "Death";
-    const showClosedOutcomeFields = CLOSED_OUTCOMES.includes(record.outcome);
-
-    return shell(
-      "<section class=\"page\">" +
-        "<section class=\"page-header\"><h2>" + escapeHtml(state.editingId ? "Update admission" : "Add admission") + "</h2><p>The admission form saves with a lighter required set, uses dropdowns wherever practical, and stays usable on smaller screens.</p></section>" +
-        "<section class=\"grid-2\">" +
-          "<form id=\"recordForm\" class=\"surface card stack\">" +
-            "<div class=\"card-head\"><div><h3>Patient details</h3><p>Essential fields first. You can come back later and complete the rest.</p></div><span class=\"tag\">" + escapeHtml(state.editingId ? "Editing existing record" : "New record") + "</span></div>" +
-            "<section class=\"field-grid\">" +
-              field("Patient ID", "<input type=\"text\" name=\"patient_id\" value=\"" + safeAttr(record.patient_id) + "\" placeholder=\"Auto-generated if left blank\" />") +
-              field("Baby name", "<input type=\"text\" name=\"baby_name\" value=\"" + safeAttr(record.baby_name) + "\" placeholder=\"Enter baby name\" />") +
-              field("Admission date", "<input type=\"date\" name=\"admission_date\" value=\"" + safeAttr(record.admission_date) + "\" required />") +
-              field("Date of birth", "<input type=\"date\" name=\"dob\" value=\"" + safeAttr(record.dob) + "\" />") +
-              field("Unit", "<select name=\"unit\">" + optionMarkup(UNITS, record.unit) + "</select>") +
-              field("Sex", "<select name=\"sex\">" + optionMarkup(SEX_OPTIONS, record.sex, "Select sex") + "</select>") +
-              field("Admission source", "<select name=\"admission_source\">" + optionMarkup(SOURCES, record.admission_source) + "</select>") +
-              field("Birth origin", "<select name=\"birth_origin\">" + optionMarkup(BIRTH_ORIGINS, record.birth_origin) + "</select>") +
-              field("Bed number", "<input type=\"text\" name=\"bed_number\" value=\"" + safeAttr(record.bed_number) + "\" placeholder=\"Bed / cot number\" />") +
-              field("Outcome", "<select name=\"outcome\">" + optionMarkup(OUTCOMES, record.outcome) + "</select>") +
-              (showClosedOutcomeFields ? field("Outcome date", "<input type=\"date\" name=\"discharge_date\" value=\"" + safeAttr(record.discharge_date) + "\" />") : "") +
-            "</section>" +
-            "<section class=\"field-grid three\">" +
-              field("Diagnosis group", "<select name=\"diagnosis_group\">" + optionMarkup(DIAGNOSIS_GROUPS, record.diagnosis_group, "Select diagnosis group") + "</select>") +
-              field("Respiratory support", "<select name=\"respiratory_support\">" + optionMarkup(RESPIRATORY_SUPPORT_OPTIONS, record.respiratory_support, "Select support") + "</select>") +
-              field("Feeding type", "<select name=\"feeding_type\">" + optionMarkup(FEEDING_TYPE_OPTIONS, record.feeding_type, "Select feeding") + "</select>") +
-              field("Sepsis status", "<select name=\"sepsis_status\">" + optionMarkup(SEPSIS_STATUS_OPTIONS, record.sepsis_status, "Select status") + "</select>") +
-              field("Delivery type", "<select name=\"delivery_type\">" + optionMarkup(DELIVERY_TYPE_OPTIONS, record.delivery_type, "Select delivery") + "</select>") +
-              field("Antenatal steroids", "<select name=\"antenatal_steroids\">" + optionMarkup(STEROID_OPTIONS, record.antenatal_steroids, "Select option") + "</select>") +
-              field("Gestational age (weeks)", "<input type=\"number\" name=\"gestational_age\" min=\"20\" max=\"45\" step=\"1\" value=\"" + safeAttr(record.gestational_age) + "\" />") +
-              field("Birth weight (g)", "<input type=\"number\" name=\"birth_weight\" min=\"300\" max=\"7000\" step=\"10\" value=\"" + safeAttr(record.birth_weight) + "\" />") +
-              field("Mother age", "<input type=\"number\" name=\"mother_age\" min=\"10\" max=\"70\" step=\"1\" value=\"" + safeAttr(record.mother_age) + "\" />") +
-              field("APGAR at 1 min", "<input type=\"number\" name=\"apgar_1\" min=\"0\" max=\"10\" step=\"1\" value=\"" + safeAttr(record.apgar_1) + "\" />") +
-              field("APGAR at 5 min", "<input type=\"number\" name=\"apgar_5\" min=\"0\" max=\"10\" step=\"1\" value=\"" + safeAttr(record.apgar_5) + "\" />") +
-            "</section>" +
-            "<section class=\"field-grid\">" +
-              field("Diagnosis detail", "<textarea name=\"diagnosis_detail\" placeholder=\"Clinical detail or note\">" + escapeHtml(record.diagnosis_detail) + "</textarea>", "full") +
-              field("Mother name", "<input type=\"text\" name=\"mother_name\" value=\"" + safeAttr(record.mother_name) + "\" />") +
-              field("Father name", "<input type=\"text\" name=\"father_name\" value=\"" + safeAttr(record.father_name) + "\" />") +
-              field("Contact number", "<input type=\"tel\" name=\"contact_number\" value=\"" + safeAttr(record.contact_number) + "\" />") +
-              field("Address", "<textarea name=\"address\">" + escapeHtml(record.address) + "</textarea>", "full") +
-            "</section>" +
-            (isDeath ? "<section class=\"field-grid\">" + field("Death timing bucket", "<select name=\"death_timing_bucket\">" + optionMarkup(DEATH_TIMING_BUCKETS, record.death_timing_bucket, "Select timing") + "</select>") + field("Death timing detail", "<select name=\"death_timing_detail\">" + optionMarkup(DEATH_TIMING_DETAILS, record.death_timing_detail, "Select detailed timing") + "</select>", "full") + field("Death cause detail", "<select name=\"death_cause_detail\">" + optionMarkup(DEATH_CAUSE_DETAILS, record.death_cause_detail, "Select cause detail") + "</select>", "full") + "</section>" : "") +
-            field("Notes", "<textarea name=\"notes\" placeholder=\"Additional clinical or follow-up notes\">" + escapeHtml(record.notes) + "</textarea>") +
-            "<div class=\"row\"><button class=\"btn btn-primary\" type=\"submit\">" + escapeHtml(state.editingId ? "Update admission" : "Save admission") + "</button><button class=\"btn btn-secondary\" type=\"button\" id=\"clearRecordForm\">Start fresh</button></div>" +
-          "</form>" +
-          "<section class=\"surface card stack\"><div class=\"card-head\"><div><h3>Admission help</h3><p>What changed in this version.</p></div></div><ul class=\"list\"><li>Add admission now saves through a single plain JavaScript flow.</li><li>Most repetitive fields are dropdowns to reduce typing errors.</li><li>Death fields appear only when needed so the form stays shorter.</li><li>The same form works for new admission and later updates.</li></ul><div class=\"section-note\"><p class=\"tiny\">Required now: admission date only. Patient ID is generated automatically when left empty.</p></div></section>" +
-        "</section>" +
-      "</section>"
-    );
-  }
-
-  function recordsPage() {
-    const records = filteredRecords();
-    return shell(
-      "<section class=\"page\">" +
-        "<section class=\"page-header\"><h2>Saved records</h2><p>Search and filter admissions, then open any record for edits.</p></section>" +
-        "<section class=\"surface table-card stack\">" +
-          "<div class=\"toolbar\">" +
-            "<input id=\"filterQ\" type=\"search\" placeholder=\"Search patient, mother, diagnosis\" value=\"" + safeAttr(state.filters.q) + "\" />" +
-            "<select id=\"filterUnit\">" + optionMarkup(UNITS, state.filters.unit, "All units") + "</select>" +
-            "<select id=\"filterOutcome\">" + optionMarkup(OUTCOMES, state.filters.outcome, "All outcomes") + "</select>" +
-            "<select id=\"filterDiagnosis\">" + optionMarkup(DIAGNOSIS_GROUPS, state.filters.diagnosis_group, "All diagnosis groups") + "</select>" +
-            "<select id=\"filterTiming\">" + optionMarkup(DEATH_TIMING_BUCKETS, state.filters.death_timing_bucket, "All death timing") + "</select>" +
-            "<button class=\"btn btn-secondary\" id=\"clearFilters\">Clear</button>" +
-            "<button class=\"btn btn-primary\" id=\"exportRecordsCsv\">Export CSV</button>" +
-          "</div>" +
-          recordsMarkup(records) +
-        "</section>" +
-      "</section>"
-    );
-  }
-
-  function recordsMarkup(records) {
-    if (!records.length) {
-      return "<div class=\"empty\">No records match the current filters.</div>";
-    }
-
-    const mobile = "<div class=\"mobile-only\"><div class=\"record-card-list\">" + records.map(recordCard).join("") + "</div></div>";
-    const desktop = (
-      "<div class=\"desktop-only table-wrap\">" +
-        "<table>" +
-          "<thead><tr><th>Patient ID</th><th>Baby</th><th>Admission</th><th>Outcome</th><th>Unit</th><th>Source</th><th>Mother</th><th>Diagnosis</th><th>Death Timing</th><th>Action</th></tr></thead>" +
-          "<tbody>" +
-            records.map(function (record) {
-              return "<tr><td>" + escapeHtml(record.patient_id || "â€”") + "</td><td>" + escapeHtml(record.baby_name || "â€”") + "</td><td>" + escapeHtml(fmtDate(record.admission_date)) + "</td><td><span class=\"outcome-pill " + outcomeClass(record.outcome) + "\">" + escapeHtml(record.outcome) + "</span></td><td>" + escapeHtml(record.unit || "â€”") + "</td><td>" + escapeHtml(record.admission_source || "â€”") + "</td><td>" + escapeHtml(record.mother_name || "â€”") + "</td><td>" + escapeHtml(record.diagnosis_group || "â€”") + "</td><td>" + escapeHtml(record.death_timing_bucket || "â€”") + "</td><td><button class=\"btn btn-secondary btn-sm\" data-edit=\"" + safeAttr(record.id) + "\">Edit</button></td></tr>";
-            }).join("") +
-          "</tbody>" +
-        "</table>" +
-      "</div>"
-    );
-
-    return mobile + desktop;
-  }
-
-  function reportsPage() {
-    const records = reportRecords();
-    const summary = monthlySummary(records);
-    const totals = totalRow(summary);
-    const percentage = percentageRow(summary);
-
-    return shell(
-      "<section class=\"page\">" +
-        "<section class=\"page-header\"><h2>Reports</h2><p>Generate filtered exports and review the monthly summary table.</p></section>" +
-        "<section class=\"surface sheet-card stack\">" +
-          "<div class=\"toolbar\">" +
-            "<input type=\"date\" name=\"report_from\" value=\"" + safeAttr(state.report.from) + "\" />" +
-            "<input type=\"date\" name=\"report_to\" value=\"" + safeAttr(state.report.to) + "\" />" +
-            "<button class=\"btn btn-secondary\" id=\"exportJson\">Export JSON</button>" +
-            "<button class=\"btn btn-primary\" id=\"exportExcel\">Export Excel</button>" +
-          "</div>" +
-          "<div class=\"section-note\"><p class=\"tiny\">" + escapeHtml(fmtInt(records.length)) + " records in the selected range.</p></div>" +
-          "<div class=\"summary-table table-wrap\">" + summaryTable(summary.concat([totals, percentage])) + "</div>" +
-        "</section>" +
-      "</section>"
-    );
-  }
-
-  function summaryTable(rows) {
-    const headers = rows.length ? Object.keys(rows[0]) : ["Month"];
-    return (
-      "<table><thead><tr>" + headers.map(function (header) {
-        return "<th>" + escapeHtml(header) + "</th>";
-      }).join("") + "</tr></thead><tbody>" +
-      rows.map(function (row) {
-        return "<tr>" + headers.map(function (header) {
-          return "<td>" + escapeHtml(row[header]) + "</td>";
-        }).join("") + "</tr>";
-      }).join("") +
-      "</tbody></table>"
-    );
-  }
-
-  function settingsPage() {
-    if (!isAdmin()) {
-      return shell("<section class=\"page\"><section class=\"surface card\"><div class=\"empty\">Only admin users can open settings.</div></section></section>");
-    }
-
-    return shell(
-      "<section class=\"page\">" +
-        "<section class=\"page-header\"><h2>Settings</h2><p>These values are shared through Firestore for all users.</p></section>" +
-        "<form id=\"settingsForm\" class=\"surface card stack\">" +
-          "<section class=\"field-grid\">" +
-            field("Hospital name", "<input type=\"text\" name=\"hospitalName\" value=\"" + safeAttr(state.settings.hospitalName) + "\" required />") +
-            field("Unit name", "<input type=\"text\" name=\"unitName\" value=\"" + safeAttr(state.settings.unitName) + "\" required />") +
-            field("Contact", "<input type=\"text\" name=\"contact\" value=\"" + safeAttr(state.settings.contact) + "\" />") +
-            field("Address", "<textarea name=\"address\">" + escapeHtml(state.settings.address) + "</textarea>", "full") +
-            field("Admin emails", "<textarea name=\"adminEmails\">" + escapeHtml((state.settings.adminEmails || []).join(", ")) + "</textarea>", "full") +
-          "</section>" +
-          "<div class=\"row\"><button class=\"btn btn-primary\" type=\"submit\">Save settings</button></div>" +
-        "</form>" +
-      "</section>"
-    );
-  }
-
-  function aboutPage() {
-    return shell(
-      "<section class=\"page\">" +
-        "<section class=\"page-header\"><h2>About this build</h2><p>This version focuses on getting admissions working reliably with cleaner interactivity and a better mobile layout.</p></section>" +
-        "<section class=\"grid-2\">" +
-          "<section class=\"surface card\"><div class=\"card-head\"><div><h3>What was improved</h3><p>The update is aimed at day-to-day use, not demo behavior.</p></div></div><ul class=\"list\"><li>Admission save flow was rebuilt in plain JavaScript.</li><li>Many free-text fields were converted to dropdown menus.</li><li>Responsive stacking was tightened for smaller screens.</li><li>Editing an existing admission now reuses the same form more clearly.</li></ul></section>" +
-          "<section class=\"surface card\"><div class=\"card-head\"><div><h3>Collections used</h3><p>Firestore data stays in the same places.</p></div></div><ul class=\"list\"><li>settings/app</li><li>users/{uid}</li><li>records/{recordId}</li></ul></section>" +
-        "</section>" +
-      "</section>"
-    );
-  }
-
-  function performRender() {
-    let html = "";
-    if (state.booting) {
-      html = "<section class=\"auth-shell\"><section class=\"auth-hero\"><div class=\"brand\"><div class=\"logo-mark\"></div><div class=\"brand-copy\"><strong>RIMS NICU Tracker</strong><span>Loading Firebase session...</span></div></div><h1 class=\"auth-title\">Connecting to live cloud sync.</h1><p class=\"auth-subtitle\">Please wait while the app restores your session and Firestore subscriptions.</p></section><section class=\"surface auth-card\"><div class=\"empty\">Loading...</div></section></section>";
-    } else if (!state.currentUser) {
-      html = authPage();
-    } else if (state.route === "dashboard") {
-      html = dashboardPage();
-    } else if (state.route === "admission") {
-      html = recordFormPage();
-    } else if (state.route === "records") {
-      html = recordsPage();
-    } else if (state.route === "reports") {
-      html = reportsPage();
-    } else if (state.route === "settings") {
-      html = settingsPage();
-    } else {
-      html = aboutPage();
-    }
-    appRoot.innerHTML = html;
-    bindEvents();
-  }
-
-  let renderQueued = false;
-  let statusTimer = null;
-  function render() {
-    if (renderQueued) {
-      return;
-    }
-    renderQueued = true;
-    requestAnimationFrame(function () {
-      renderQueued = false;
-      performRender();
-    });
-  }
-  function bindEvents() {
-    appRoot.querySelectorAll("[data-route]").forEach(function (button) {
-      button.addEventListener("click", function () {
-        clearGlobalStatus();
-        const route = button.getAttribute("data-route");
-        if (route === "settings" && !isAdmin()) {
-          setStatus("Only admin users can open Settings.", "warning");
-          return;
+      async function authFetch(path, options){
+        if(!isConfigured()) throw new Error('Supabase is not configured yet. Add SUPABASE_URL and SUPABASE_ANON_KEY in Settings.');
+        const res = await fetch(state.config.url.replace(/\/$/,'') + path, options);
+        const text = await res.text();
+        let data = null;
+        try{ data = text ? JSON.parse(text) : null; }catch(e){ data = text; }
+        if(!res.ok){
+          const msg = data && (data.msg || data.message || data.error_description || data.error) ? (data.msg || data.message || data.error_description || data.error) : 'Request failed.';
+          throw new Error(msg);
         }
-        saveRoute(route);
-        render();
-      });
-    });
-
-    appRoot.querySelectorAll("[data-auth-view]").forEach(function (button) {
-      button.addEventListener("click", function () {
-        state.authView = button.getAttribute("data-auth-view");
-        state.authStatus = "";
-        state.authStatusType = "";
-        render();
-      });
-    });
-
-    const authForm = document.getElementById("authForm");
-    if (authForm) {
-      authForm.addEventListener("submit", async function (event) {
-        event.preventDefault();
-        const formData = new FormData(authForm);
-        const email = String(formData.get("email") || "").trim();
-        const password = String(formData.get("password") || "").trim();
-        if (!email) {
-          setStatus("Please enter an email address.", "error", "auth");
-          return;
+        return data;
+      }
+      async function refreshUser(){
+        if(!state.session || state.session.type==='demo' || !state.session.access_token) return;
+        try{
+          const user = await authFetch('/auth/v1/user', {headers:getHeaders(true)});
+          state.session.user = user;
+          persist(KEYS.session, state.session);
+        }catch(err){
+          if(state.session.refresh_token){
+            try{
+              const data = await authFetch('/auth/v1/token?grant_type=refresh_token', {method:'POST', headers:getHeaders(false), body:JSON.stringify({refresh_token:state.session.refresh_token})});
+              state.session = data; persist(KEYS.session, state.session);
+            }catch(e){ signOut(false); }
+          } else signOut(false);
         }
-
-        state.loading = true;
-        render();
-        try {
-          if (state.authView === "signin") {
-            await auth.signInWithEmailAndPassword(email, password);
-            setStatus("Signed in successfully.", "success", "auth");
-          } else if (state.authView === "signup") {
-            await auth.createUserWithEmailAndPassword(email, password);
-            setStatus("Account created successfully.", "success", "auth");
+      }
+      async function signIn(email,password){
+        const data = await authFetch('/auth/v1/token?grant_type=password', {method:'POST', headers:getHeaders(false), body:JSON.stringify({email,password})});
+        state.session = data; persist(KEYS.session, state.session);
+        await refreshUser();
+      }
+      async function signUp(email,password){
+        const data = await authFetch('/auth/v1/signup', {method:'POST', headers:getHeaders(false), body:JSON.stringify({email,password})});
+        if(data && data.access_token){ state.session = data; persist(KEYS.session, state.session); await refreshUser(); }
+        return data;
+      }
+      async function forgotPassword(email){
+        return authFetch('/auth/v1/recover', {method:'POST', headers:getHeaders(false), body:JSON.stringify({email, redirect_to: location.href.split('#')[0] + '#login'})});
+      }
+      function enterDemo(){
+        state.session = {type:'demo', user:{email:'demo@local', id:'demo-user'}};
+        persist(KEYS.session, state.session);
+        saveRoute('dashboard');
+        setStatus('Entered demo mode with local sample data.', 'success');
+      }
+      function signOut(renderNow=true){
+        state.session = null; persist(KEYS.session, null);
+        state.editingId='';
+        saveRoute('login');
+        if(renderNow) render();
+      }
+      async function fetchRecords(){
+        state.loading = true; render();
+        try{
+          if(isConfigured() && !isDemo() && state.session && state.session.access_token){
+            const rows = await authFetch('/rest/v1/nicu_records?select=*&order=admission_date.desc', {headers:getHeaders(true)});
+            state.records = Array.isArray(rows) ? rows : [];
           } else {
-            await auth.sendPasswordResetEmail(email);
-            setStatus("Password reset email sent.", "success", "auth");
+            state.records = loadJson(KEYS.records, sampleRecords);
           }
-        } catch (error) {
-          setStatus(error.message || "Authentication failed.", "error", "auth");
+          persist(KEYS.records, state.records);
+          clearStatus();
+        }catch(err){
+          setStatus('Could not load cloud data. Showing local demo records. ' + err.message, 'error');
+          state.records = loadJson(KEYS.records, sampleRecords);
+        } finally { state.loading = false; render(); }
+      }
+      async function saveRecord(record){
+        if(isConfigured() && !isDemo() && state.session && state.session.access_token){
+          const payload = clone(record);
+          if(!payload.created_by) payload.created_by = (state.session.user && state.session.user.id) || '';
+          if(state.editingId){
+            await authFetch('/rest/v1/nicu_records?id=eq.' + encodeURIComponent(state.editingId), {method:'PATCH', headers:{...getHeaders(true), Prefer:'return=representation'}, body:JSON.stringify(payload)});
+          } else {
+            delete payload.id;
+            await authFetch('/rest/v1/nicu_records', {method:'POST', headers:{...getHeaders(true), Prefer:'return=representation'}, body:JSON.stringify(payload)});
+          }
+        } else {
+          if(state.editingId){
+            const idx = state.records.findIndex(r => String(r.id) === String(state.editingId));
+            if(idx >= 0) state.records[idx] = {...state.records[idx], ...record, id:state.editingId};
+          } else {
+            state.records.unshift({...record, id:uid(), created_by:'demo', created_at:new Date().toISOString()});
+          }
+          persist(KEYS.records, state.records);
         }
-        state.loading = false;
-        render();
-      });
-    }
-
-    const googleSignIn = document.getElementById("googleSignIn");
-    if (googleSignIn) {
-      googleSignIn.addEventListener("click", async function () {
-        state.loading = true;
-        render();
-        try {
-          await auth.signInWithPopup(provider);
-          setStatus("Google sign-in successful.", "success", "auth");
-        } catch (error) {
-          setStatus(error.message || "Google sign-in failed.", "error", "auth");
+        state.editingId='';
+        await fetchRecords();
+      }
+      async function removeRecord(id){
+        if(isConfigured() && !isDemo() && state.session && state.session.access_token){
+          await authFetch('/rest/v1/nicu_records?id=eq.' + encodeURIComponent(id), {method:'DELETE', headers:getHeaders(true)});
+        } else {
+          state.records = state.records.filter(r => String(r.id) !== String(id));
+          persist(KEYS.records, state.records);
         }
-        state.loading = false;
-        render();
-      });
-    }
-
-    const signOutBtn = document.getElementById("signOutBtn");
-    if (signOutBtn) {
-      signOutBtn.addEventListener("click", async function () {
-        await auth.signOut();
-        clearSubscriptions();
-        state.currentUser = null;
-        state.profile = null;
-        state.records = [];
-        clearDraft();
-        state.editingId = "";
-        saveRoute("dashboard");
-        render();
-      });
-    }
-
-    const refreshData = document.getElementById("refreshData");
-    if (refreshData) {
-      refreshData.addEventListener("click", function () {
-        subscribeToCloud();
-        setStatus("Refreshing live records from Firestore.", "success");
-      });
-    }
-
-    const recordForm = document.getElementById("recordForm");
-    if (recordForm) {
-      bindDraftPersistence(recordForm);
-      recordForm.querySelector("[name=\"outcome\"]").addEventListener("change", function () {
-        saveDraft(formToRecord(recordForm));
-        render();
-      });
-
-      recordForm.addEventListener("submit", async function (event) {
-        event.preventDefault();
-        const record = normalizeRecord(formToRecord(recordForm));
-        const error = validateRecord(record);
-        if (error) {
-          setStatus(error, "error");
-          return;
-        }
-
-        state.loading = true;
-        render();
-        try {
-          await db.collection("records").doc(record.id).set(record, { merge: true });
-          state.editingId = "";
-          clearDraft();
-          setStatus("Patient admission saved successfully.", "success");
-          saveRoute("records");
-        } catch (saveError) {
-          setStatus(friendlyFirestoreError(saveError, "Could not save record."), "error");
-        }
-        state.loading = false;
-        render();
-      });
-    }
-
-    const clearRecordForm = document.getElementById("clearRecordForm");
-    if (clearRecordForm) {
-      clearRecordForm.addEventListener("click", function () {
-        state.editingId = "";
-        clearDraft();
-        render();
-      });
-    }
-
-    appRoot.querySelectorAll("[data-edit]").forEach(function (button) {
-      button.addEventListener("click", function () {
-        const id = button.getAttribute("data-edit");
-        const record = state.records.find(function (item) {
-          return item.id === id;
+        await fetchRecords();
+      }
+      function filteredRecords(){
+        let list = state.records.slice();
+        const q = state.filters.q.trim().toLowerCase();
+        list = list.filter(r => {
+          const text = [r.patient_id,r.baby_name,r.diagnosis,r.notes,r.respiratory_support].join(' ').toLowerCase();
+          return (!q || text.includes(q)) && (!state.filters.outcome || r.outcome===state.filters.outcome) && (!state.filters.sex || r.sex===state.filters.sex) && (!state.filters.support || r.respiratory_support===state.filters.support);
         });
-        state.editingId = id;
-        if (record) {
-          saveDraft(record);
+        list.sort((a,b)=>{
+          let av = a[state.sort.key], bv = b[state.sort.key];
+          if(['gestational_age','birth_weight','length_of_stay','apgar_1','apgar_5','mother_age'].includes(state.sort.key)){ av = num(av); bv = num(bv); }
+          else { av = String(av||'').toLowerCase(); bv = String(bv||'').toLowerCase(); }
+          if(av < bv) return state.sort.dir==='asc' ? -1 : 1;
+          if(av > bv) return state.sort.dir==='asc' ? 1 : -1;
+          return 0;
+        });
+        return list;
+      }
+      function analytics(data){
+        const total = data.length;
+        const active = data.filter(r => r.outcome === 'Ongoing').length;
+        const discharged = data.filter(r => r.outcome === 'Discharged').length;
+        const deceased = data.filter(r => r.outcome === 'Deceased').length;
+        const avgWeight = avg(data.map(r => num(r.birth_weight)));
+        const avgGa = avg(data.map(r => num(r.gestational_age)));
+        const avgLos = avg(data.map(r => num(r.length_of_stay)));
+        const lbw = data.filter(r => num(r.birth_weight) < 2500).length;
+        const preterm = data.filter(r => num(r.gestational_age) < 37).length;
+        return {total,active,discharged,deceased,avgWeight,avgGa,avgLos,lbw,preterm,dischargeRate:pct(discharged,total),mortality:pct(deceased,total)};
+      }
+      function countBy(data,key){ return data.reduce((acc,r)=>{ const k = r[key] || 'Unknown'; acc[k]=(acc[k]||0)+1; return acc; },{}); }
+      function topEntry(obj){ const entries = Object.entries(obj); if(!entries.length) return ['None',0]; entries.sort((a,b)=>b[1]-a[1]); return entries[0]; }
+      function weightBands(data){ const b={'<1000g':0,'1000-1499g':0,'1500-2499g':0,'2500-3999g':0,'â‰¥4000g':0}; data.forEach(r=>{ const w=num(r.birth_weight); if(w<1000)b['<1000g']++; else if(w<1500)b['1000-1499g']++; else if(w<2500)b['1500-2499g']++; else if(w<4000)b['2500-3999g']++; else b['â‰¥4000g']++; }); return b; }
+      function monthlyTrend(data){ const map={}; data.forEach(r=>{ const d=new Date(r.admission_date); if(isNaN(d)) return; const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); map[k]=(map[k]||0)+1; }); return Object.keys(map).sort().map(k=>({label:k,count:map[k]})); }
+      function insights(data){
+        if(!data.length) return ['No records yet. Seed demo data or create a new admission to populate the dashboard.'];
+        const a = analytics(data);
+        const [dx,dxCount] = topEntry(countBy(data,'diagnosis'));
+        const [support,supportCount] = topEntry(countBy(data,'respiratory_support'));
+        const suspected = data.filter(r => ['Suspected sepsis','Confirmed infection'].includes(r.sepsis_status)).length;
+        const pretermPct = pct(a.preterm,a.total);
+        const lbwPct = pct(a.lbw,a.total);
+        return [
+          'The dataset contains ' + a.total + ' admissions, with ' + a.active + ' active patients currently marked as ongoing.',
+          'Average birth weight is ' + fmtInt(a.avgWeight) + ' g and average gestational age is ' + fmt1(a.avgGa) + ' weeks.',
+          fmt1(pretermPct) + '% of admissions are preterm and ' + fmt1(lbwPct) + '% are low birth weight.',
+          'Most common diagnosis: ' + dx + ' (' + dxCount + ' record' + (dxCount===1?'':'s') + ').',
+          'Most frequently used respiratory support: ' + support + ' (' + supportCount + ' use' + (supportCount===1?'':'s') + ').',
+          a.mortality >= 15 ? 'Mortality is elevated at ' + fmt1(a.mortality) + '%. Consider reviewing case severity, referral timing, and respiratory pathways.' : 'Current mortality rate is ' + fmt1(a.mortality) + '%, while discharge rate is ' + fmt1(a.dischargeRate) + '%.',
+          suspected ? suspected + ' baby' + (suspected===1 ? ' has' : 's have') + ' suspected or confirmed infection documented.' : 'No suspected or confirmed infections are currently documented.'
+        ];
+      }
+      function schemaSql(){
+        return "create table public.nicu_records (\n  id bigint generated by default as identity primary key,\n  patient_id text unique not null,\n  baby_name text not null,\n  dob date,\n  gestational_age numeric,\n  birth_weight integer,\n  sex text,\n  delivery_type text,\n  apgar_1 integer,\n  apgar_5 integer,\n  diagnosis text,\n  respiratory_support text,\n  sepsis_status text,\n  feeding_type text,\n  admission_date date not null,\n  discharge_date date,\n  length_of_stay integer,\n  outcome text,\n  mother_age integer,\n  antenatal_steroids text,\n  notes text,\n  created_by uuid,\n  created_at timestamptz default now()\n);\n\n-- Recommended RLS idea\nalter table public.nicu_records enable row level security;";
+      }
+      function recordsForReport(){
+        const list = filteredRecords();
+        const from = state.report.from ? new Date(state.report.from) : null;
+        const to = state.report.to ? new Date(state.report.to) : null;
+        return list.filter(r=>{
+          const d = new Date(r.admission_date);
+          if(from && d < from) return false;
+          if(to && d > new Date(to.getTime()+86400000-1)) return false;
+          if(state.report.type==='patient' && state.report.patientId && String(r.id)!==String(state.report.patientId)) return false;
+          return true;
+        });
+      }
+      function reportTitle(type){ return ({census:'NICU Census / Summary Report',outcomes:'NICU Outcomes Report',monthly:'Monthly Admissions Report',patient:'Single Patient Summary'})[type] || 'NICU Report'; }
+      function reportHtml(){
+        const rows = recordsForReport();
+        const a = analytics(rows);
+        const title = reportTitle(state.report.type);
+        const patient = rows[0];
+        let body = '';
+        if(state.report.type==='patient'){
+          if(!patient) body = '<div class="empty">Select a patient to preview a summary report.</div>';
+          else body = '<div class="split"><div class="report-box"><strong>Patient ID</strong><div>'+escapeHtml(patient.patient_id)+'</div></div><div class="report-box"><strong>Baby Name</strong><div>'+escapeHtml(patient.baby_name)+'</div></div><div class="report-box"><strong>Admission Date</strong><div>'+escapeHtml(fmtDate(patient.admission_date))+'</div></div><div class="report-box"><strong>Outcome</strong><div>'+escapeHtml(patient.outcome||'â€”')+'</div></div><div class="report-box"><strong>Gestational Age</strong><div>'+escapeHtml(String(patient.gestational_age||'â€”'))+' weeks</div></div><div class="report-box"><strong>Birth Weight</strong><div>'+fmtInt(patient.birth_weight)+' g</div></div></div><div class="card" style="margin-top:16px;padding:16px;border-radius:18px;background:#f8fcff;border:1px solid var(--line)"><strong>Clinical Summary</strong><p style="margin-top:8px;color:var(--muted);line-height:1.7">Diagnosis: '+escapeHtml(patient.diagnosis||'â€”')+'<br>Respiratory support: '+escapeHtml(patient.respiratory_support||'â€”')+'<br>Feeding type: '+escapeHtml(patient.feeding_type||'â€”')+'<br>Notes: '+escapeHtml(patient.notes||'No notes documented.')+'</p></div>';
+        } else {
+          body = '<div class="report-meta"><div class="report-box"><strong>Total admissions</strong><div style="font-size:1.5rem;font-weight:800;margin-top:8px">'+a.total+'</div></div><div class="report-box"><strong>Discharge rate</strong><div style="font-size:1.5rem;font-weight:800;margin-top:8px">'+fmt1(a.dischargeRate)+'%</div></div><div class="report-box"><strong>Mortality rate</strong><div style="font-size:1.5rem;font-weight:800;margin-top:8px">'+fmt1(a.mortality)+'%</div></div></div>';
+          if(state.report.type==='monthly'){
+            const trend = monthlyTrend(rows);
+            body += '<table class="report-table"><thead><tr><th>Month</th><th>Admissions</th></tr></thead><tbody>' + (trend.length ? trend.map(r=>'<tr><td>'+escapeHtml(r.label)+'</td><td>'+r.count+'</td></tr>').join('') : '<tr><td colspan="2">No monthly data available.</td></tr>') + '</tbody></table>';
+          } else if(state.report.type==='outcomes'){
+            const outcomes = countBy(rows,'outcome');
+            body += '<table class="report-table"><thead><tr><th>Outcome</th><th>Count</th></tr></thead><tbody>' + (Object.keys(outcomes).length ? Object.entries(outcomes).map(([k,v])=>'<tr><td>'+escapeHtml(k)+'</td><td>'+v+'</td></tr>').join('') : '<tr><td colspan="2">No outcomes available.</td></tr>') + '</tbody></table>';
+          } else {
+            body += '<table class="report-table"><thead><tr><th>Patient ID</th><th>Baby Name</th><th>Admission</th><th>Outcome</th><th>Diagnosis</th></tr></thead><tbody>' + (rows.length ? rows.slice(0,16).map(r=>'<tr><td>'+escapeHtml(r.patient_id)+'</td><td>'+escapeHtml(r.baby_name)+'</td><td>'+escapeHtml(fmtDate(r.admission_date))+'</td><td>'+escapeHtml(r.outcome||'â€”')+'</td><td>'+escapeHtml(r.diagnosis||'â€”')+'</td></tr>').join('') : '<tr><td colspan="5">No records available.</td></tr>') + '</tbody></table>';
+          }
         }
-        saveRoute("admission");
-        render();
-      });
-    });
+        return '<div class="report-preview print-target" id="printTarget"><div class="report-brand"><div class="brand"><div class="logo-mark"></div><div><strong>'+escapeHtml(state.branding.hospitalName)+'</strong><div class="muted">'+escapeHtml(state.branding.unitName)+'</div><div class="tiny">'+escapeHtml(state.branding.address)+'<br>'+escapeHtml(state.branding.contact)+'</div></div></div><div class="right tiny">Generated '+escapeHtml(new Date().toLocaleString())+'<br>Mode: '+escapeHtml(currentMode())+'</div></div><div class="report-title">'+escapeHtml(title)+'</div><p class="tiny" style="margin-top:8px">Date range: '+escapeHtml(state.report.from || 'Start not set')+' to '+escapeHtml(state.report.to || 'End not set')+'</p>'+body+'</div>';
+      }
 
-    bindFilter("filterQ", "q", "input");
-    bindFilter("filterUnit", "unit", "change");
-    bindFilter("filterOutcome", "outcome", "change");
-    bindFilter("filterDiagnosis", "diagnosis_group", "change");
-    bindFilter("filterTiming", "death_timing_bucket", "change");
+      function routeGuard(){
+        if(protectedRoutes.includes(state.route) && !isAuthenticated()) saveRoute('login');
+        if(!protectedRoutes.includes(state.route) && isAuthenticated() && state.route==='login') saveRoute('dashboard');
+      }
 
-    const clearFilters = document.getElementById("clearFilters");
-    if (clearFilters) {
-      clearFilters.addEventListener("click", function () {
-        state.filters = { q: "", unit: "", outcome: "", diagnosis_group: "", death_timing_bucket: "" };
-        render();
-      });
-    }
+      function authPage(){
+        return '<div class="auth-shell '+(state.loading?'loading':'')+'"><section class="auth-hero"><div class="brand"><div class="logo-mark"></div><div class="brand-copy"><strong>'+escapeHtml(state.branding.unitName)+'</strong><span>'+escapeHtml(state.branding.hospitalName)+'</span></div></div><div class="eyebrow" style="margin-top:24px">Neonatal quality platform</div><h1 class="auth-title">A production-style NICU workspace for admissions, analytics, and reports.</h1><p class="auth-subtitle">Sign in with Supabase Authentication for live cloud data, or enter demo mode to explore the multi-page app locally before setup. Designed for static deployment to Vercel or Netlify with Supabase as the backend.</p><div class="hero-stats"><div class="hero-stat"><div class="k">Auth</div><div class="v">Supabase</div><div class="s">Email sign-in, sign-up, reset</div></div><div class="hero-stat"><div class="k">Data</div><div class="v">Live CRUD</div><div class="s">REST-backed NICU records</div></div><div class="hero-stat"><div class="k">Reports</div><div class="v">PDF-ready</div><div class="s">Print to browser PDF</div></div><div class="hero-stat"><div class="k">Fallback</div><div class="v">Demo mode</div><div class="s">Works before setup</div></div></div></section><section class="auth-card"><div><h2>'+ (state.authView==='signin' ? 'Sign in' : state.authView==='signup' ? 'Create account' : 'Reset password') +'</h2><p class="muted" style="margin-top:8px">'+(isConfigured() ? 'Supabase credentials detected. You can authenticate with email and password.' : 'Supabase is not configured yet. Add credentials in Settings or use demo mode.')+'</p></div><div class="segmented"><button data-auth-view="signin" class="'+(state.authView==='signin'?'active':'')+'">Sign in</button><button data-auth-view="signup" class="'+(state.authView==='signup'?'active':'')+'">Sign up</button><button data-auth-view="forgot" class="'+(state.authView==='forgot'?'active':'')+'">Forgot password</button></div><form id="authForm" class="stack"><div class="field"><label for="authEmail">Email address</label><input id="authEmail" name="email" type="email" required placeholder="nicu@hospital.org"></div>'+(state.authView!=='forgot' ? '<div class="field"><label for="authPassword">Password</label><input id="authPassword" name="password" type="password" required minlength="6" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"></div>' : '')+'<div class="row"><button class="btn btn-primary" type="submit">'+(state.authView==='signin'?'Sign in':state.authView==='signup'?'Create account':'Send reset link')+'</button><button class="btn btn-secondary" type="button" id="demoEntry">Continue in demo mode</button></div><div class="status '+escapeHtml(state.authStatusType)+'" aria-live="polite">'+escapeHtml(state.authStatus)+'</div></form><div class="auth-help"><strong>Setup notes</strong><p class="tiny" style="margin-top:8px">Open Settings to store <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> locally for this app. No server is required. Deploy the same file to Netlify or Vercel as a static site.</p><div class="row" style="margin-top:10px"><button class="btn btn-ghost" id="goSetup">Open setup</button><button class="btn btn-ghost" id="goAbout">About hospital app</button></div></div></section></div>';
+      }
 
-    const exportRecordsCsv = document.getElementById("exportRecordsCsv");
-    if (exportRecordsCsv) {
-      exportRecordsCsv.addEventListener("click", function () {
-        downloadFile("nicu-records.csv", toCsv(filteredRecords()), "text/csv");
-      });
-    }
+      function shell(content){
+        const userLabel = isDemo() ? 'Demo clinician' : ((state.session && state.session.user && state.session.user.email) || 'Authenticated user');
+        return '<div class="main-shell '+(state.loading?'loading':'')+'"><aside class="sidebar"><div class="sidebar-meta"><div class="brand"><div class="logo-mark"></div><div class="brand-copy"><strong>'+escapeHtml(state.branding.unitName)+'</strong><span>'+escapeHtml(state.branding.hospitalName)+'</span></div></div><div class="mode-pill '+(isDemo()?'demo':'')+'"><span class="dot"></span>'+escapeHtml(currentMode())+' mode</div></div><nav class="nav"><button data-route="dashboard" class="'+active('dashboard')+'">ðŸ¥ Dashboard</button><button data-route="new-record" class="'+active('new-record')+'">âž• New Record</button><button data-route="records" class="'+active('records')+'">ðŸ“‹ Records List</button><button data-route="analytics" class="'+active('analytics')+'">ðŸ“ˆ Analytics</button><button data-route="reports" class="'+active('reports')+'">ðŸ§¾ Reports</button><button data-route="settings" class="'+active('settings')+'">âš™ï¸ Settings / Setup</button><button data-route="about" class="'+active('about')+'">â„¹ï¸ About</button></nav><div class="card" style="padding:16px;border-radius:18px"><strong style="display:block">Signed in as</strong><div class="tiny" style="margin-top:8px">'+escapeHtml(userLabel)+'</div><div class="tiny" style="margin-top:6px">Session persistence uses localStorage in this browser.</div></div><div class="stack"><button class="btn btn-secondary" id="seedDemo">Reload sample data</button><button class="btn btn-danger" id="signOutBtn">Sign out</button></div></aside><main class="content"><div class="topbar"><div><strong>'+escapeHtml(state.branding.hospitalName)+'</strong><div class="tiny">'+escapeHtml(state.branding.address)+' Â· '+escapeHtml(state.branding.contact)+'</div></div><div class="topbar-actions"><span class="info-pill" style="background:#f3fbff;border:1px solid var(--line);color:var(--muted)">Active route: '+escapeHtml(state.route)+'</span><button class="btn btn-secondary" data-route="new-record">Add record</button><button class="btn btn-primary" data-route="reports">Open reports</button></div></div>'+(state.globalStatus ? '<div class="card" style="padding:14px;margin-top:18px;border-radius:18px"><div class="status '+escapeHtml(state.globalStatusType)+'">'+escapeHtml(state.globalStatus)+'</div></div>' : '')+content+'<div class="footer-note">This tool supports NICU quality improvement and operational review. It is not a substitute for clinical judgment.</div></main></div>';
+      }
+      function active(route){ return state.route===route ? 'active' : ''; }
 
-    const reportFrom = document.querySelector("[name=\"report_from\"]");
-    if (reportFrom) {
-      reportFrom.addEventListener("change", function (event) {
-        state.report.from = event.target.value;
-        render();
-      });
-    }
+      function dashboardPage(){
+        const data = state.records;
+        const a = analytics(data);
+        return shell('<section class="page"><div class="page-header"><h2>Clinical dashboard</h2><p>Monitor neonatal admissions, outcome mix, and operational KPIs from live Supabase data when configured, or from built-in sample records in demo mode.</p><div class="header-actions"><button class="btn btn-primary" data-route="new-record">Create admission</button><button class="btn btn-secondary" data-route="analytics">View full analytics</button><button class="btn btn-secondary" data-route="settings">Cloud setup</button></div></div><div class="metrics"><div class="metric"><div class="k">Total admissions</div><div class="v">'+a.total+'</div><div class="s">All current records</div></div><div class="metric"><div class="k">Active patients</div><div class="v">'+a.active+'</div><div class="s">Outcome = ongoing</div></div><div class="metric"><div class="k">Discharge rate</div><div class="v">'+fmt1(a.dischargeRate)+'%</div><div class="s">Discharged / total</div></div><div class="metric"><div class="k">Mortality rate</div><div class="v">'+fmt1(a.mortality)+'%</div><div class="s">Deceased / total</div></div><div class="metric"><div class="k">Avg birth weight</div><div class="v">'+fmtInt(a.avgWeight)+' g</div><div class="s">Across all admissions</div></div><div class="metric"><div class="k">Avg gestational age</div><div class="v">'+fmt1(a.avgGa)+' w</div><div class="s">Gestational maturity</div></div></div><div class="grid-2"><section class="card"><div class="card-head"><div><h3>Executive insights</h3><p>Auto-generated plain-language observations from the current dataset.</p></div><div class="chips"><span class="kpi-chip">LBW '+analytics(data).lbw+'</span><span class="kpi-chip">Preterm '+analytics(data).preterm+'</span><span class="kpi-chip">Avg LOS '+fmt1(analytics(data).avgLos)+' d</span></div></div><ul class="insights">'+insights(data).map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul></section><section class="card"><div class="card-head"><div><h3>Get started</h3><p>Use the guided pages to configure the backend, capture admissions, and produce report exports.</p></div></div><div class="stack"><div class="empty">'+(isConfigured() ? 'Supabase is configured. New records can be saved to the cloud.' : 'Supabase is not configured yet. Demo mode remains fully usable while you complete setup in Settings.')+'</div><div class="quick-actions"><button class="btn btn-primary" data-route="new-record">New record</button><button class="btn btn-secondary" data-route="records">Review records</button><button class="btn btn-secondary" data-route="reports">Generate reports</button></div></div></section></div><section class="card"><div class="card-head"><div><h3>At-a-glance charts</h3><p>Compact visual summaries of the current admissions dataset.</p></div></div><div class="chart-grid"><div class="chart-card"><div class="card-head"><h4>Outcome distribution</h4><span class="tiny">Donut</span></div><div class="chart-wrap"><canvas id="chartDashboardOutcomes"></canvas></div></div><div class="chart-card"><div class="card-head"><h4>Monthly trend</h4><span class="tiny">Line</span></div><div class="chart-wrap"><canvas id="chartDashboardTrend"></canvas></div></div></div></section></section>');
+      }
 
-    const reportTo = document.querySelector("[name=\"report_to\"]");
-    if (reportTo) {
-      reportTo.addEventListener("change", function (event) {
-        state.report.to = event.target.value;
-        render();
-      });
-    }
+      function recordFormPage(){
+        const r = state.records.find(x => String(x.id)===String(state.editingId)) || {patient_id:'',baby_name:'',dob:'',gestational_age:'',birth_weight:'',sex:'',delivery_type:'',apgar_1:'',apgar_5:'',diagnosis:'',respiratory_support:'',sepsis_status:'',feeding_type:'',admission_date:'',discharge_date:'',length_of_stay:'',outcome:'',mother_age:'',antenatal_steroids:'',notes:''};
+        return shell('<section class="page"><div class="page-header"><h2>'+ (state.editingId ? 'Edit NICU record' : 'New NICU admission record') +'</h2><p>Capture a complete neonatal admission and save it to Supabase when configured, or to demo storage when running locally.</p></div><section class="card"><div class="card-head"><div><h3>Admission form</h3><p>Fields align with the recommended <code>nicu_records</code> schema.</p></div><div class="chips"><span class="kpi-chip">'+escapeHtml(currentMode())+' mode</span><span class="kpi-chip">Route protected</span></div></div><form id="recordForm"><div class="field-grid"><div class="field"><label>Baby / Patient ID</label><input name="patient_id" required maxlength="40" value="'+escapeHtml(r.patient_id)+'" placeholder="NICU-2026-101"></div><div class="field"><label>Baby Name</label><input name="baby_name" required maxlength="90" value="'+escapeHtml(r.baby_name)+'" placeholder="Baby Name"></div><div class="field"><label>Date of Birth</label><input name="dob" type="date" value="'+escapeHtml(r.dob)+'"></div><div class="field"><label>Admission Date</label><input name="admission_date" type="date" required value="'+escapeHtml(r.admission_date)+'"></div><div class="field"><label>Discharge Date</label><input name="discharge_date" type="date" value="'+escapeHtml(r.discharge_date||'')+'"></div><div class="field"><label>Gestational Age (weeks)</label><input name="gestational_age" type="number" min="20" max="45" step="0.1" required value="'+escapeHtml(r.gestational_age)+'"></div><div class="field"><label>Birth Weight (g)</label><input name="birth_weight" type="number" min="300" max="7000" step="1" required value="'+escapeHtml(r.birth_weight)+'"></div><div class="field"><label>Sex</label><select name="sex" required>'+options(['','Male','Female','Ambiguous'],r.sex)+'</select></div><div class="field"><label>Delivery Type</label><select name="delivery_type" required>'+options(['','Vaginal','Cesarean','Instrumental'],r.delivery_type)+'</select></div><div class="field"><label>APGAR 1 min</label><input name="apgar_1" type="number" min="0" max="10" step="1" required value="'+escapeHtml(r.apgar_1)+'"></div><div class="field"><label>APGAR 5 min</label><input name="apgar_5" type="number" min="0" max="10" step="1" required value="'+escapeHtml(r.apgar_5)+'"></div><div class="field"><label>Respiratory Support</label><select name="respiratory_support" required>'+options(['','None','Oxygen','CPAP','Mechanical Ventilation','HFNC','Bag-Mask Resuscitation'],r.respiratory_support)+'</select></div><div class="field"><label>Sepsis / Infection Status</label><select name="sepsis_status" required>'+options(['','No evidence','Risk only','Suspected sepsis','Confirmed infection'],r.sepsis_status)+'</select></div><div class="field"><label>Feeding Type</label><select name="feeding_type" required>'+options(['','Exclusive breast milk','Mixed feeds','Formula','IV fluids / NPO','Tube feeding'],r.feeding_type)+'</select></div><div class="field"><label>Length of Stay (days)</label><input name="length_of_stay" type="number" min="0" max="365" step="1" required value="'+escapeHtml(r.length_of_stay)+'"></div><div class="field"><label>Outcome</label><select name="outcome" required>'+options(['','Discharged','Referred','Deceased','Ongoing'],r.outcome)+'</select></div><div class="field"><label>Mother Age</label><input name="mother_age" type="number" min="12" max="60" step="1" required value="'+escapeHtml(r.mother_age)+'"></div><div class="field"><label>Antenatal Steroids</label><select name="antenatal_steroids" required>'+options(['','Yes','No'],r.antenatal_steroids)+'</select></div><div class="field full"><label>Diagnosis / Reason for Admission</label><input name="diagnosis" required maxlength="180" value="'+escapeHtml(r.diagnosis)+'" placeholder="Prematurity, RDS, sepsis rule-out"></div><div class="field full"><label>Notes</label><textarea name="notes" maxlength="700" placeholder="Clinical notes, interventions, follow-up details">'+escapeHtml(r.notes)+'</textarea></div></div><div class="row" style="margin-top:18px"><button class="btn btn-primary" type="submit">'+(state.editingId ? 'Update record' : 'Save record')+'</button><button class="btn btn-secondary" type="button" id="clearRecordForm">Clear form</button><button class="btn btn-secondary" type="button" data-route="records">Open records list</button></div></form></section></section>');
+      }
+      function options(list,selected){ return list.map(v => '<option value="'+escapeHtml(v)+'" '+(String(v)===String(selected)?'selected':'')+'>'+(v||'Select')+'</option>').join(''); }
 
-    const exportExcel = document.getElementById("exportExcel");
-    if (exportExcel) {
-      exportExcel.addEventListener("click", exportWorkbook);
-    }
+      function recordsPage(){
+        const list = filteredRecords();
+        return shell('<section class="page"><div class="page-header"><h2>Records list</h2><p>Search, filter, sort, edit, and delete NICU admissions from the live dataset. Edits load back into the form page.</p></div><section class="table-card"><div class="card-head"><div><h3>Admission records</h3><p>'+list.length+' visible record'+(list.length===1?'':'s')+' from '+state.records.length+' total.</p></div><div class="quick-actions"><button class="btn btn-secondary" id="exportJson">Export JSON</button><button class="btn btn-secondary" id="exportCsv">Export CSV</button><label class="btn btn-secondary" for="importFile">Import JSON / CSV</label><input class="hidden" id="importFile" type="file" accept=".json,.csv,application/json,text/csv"></div></div><div class="toolbar"><input id="filterQ" placeholder="Search patient ID, baby name, diagnosis, notes..." value="'+escapeHtml(state.filters.q)+'"><select id="filterOutcome">'+options(['','Discharged','Referred','Deceased','Ongoing'],state.filters.outcome)+'</select><select id="filterSex">'+options(['','Male','Female','Ambiguous'],state.filters.sex)+'</select><select id="filterSupport">'+options(['','None','Oxygen','CPAP','Mechanical Ventilation','HFNC','Bag-Mask Resuscitation'],state.filters.support)+'</select><button class="btn btn-secondary" id="clearFilters">Clear filters</button><button class="btn btn-danger" id="deleteAllDemo">Delete all demo data</button></div><div class="table-wrap">'+(list.length ? '<table><thead><tr>'+tableHead('patient_id','Patient ID')+tableHead('baby_name','Baby Name')+tableHead('admission_date','Admission')+tableHead('gestational_age','GA')+tableHead('birth_weight','Weight')+tableHead('sex','Sex')+tableHead('diagnosis','Diagnosis')+tableHead('respiratory_support','Support')+tableHead('length_of_stay','LOS')+tableHead('outcome','Outcome')+'<th>Actions</th></tr></thead><tbody>'+list.map(r => '<tr><td>'+escapeHtml(r.patient_id)+'</td><td><strong>'+escapeHtml(r.baby_name)+'</strong><br><span class="tiny">DOB '+escapeHtml(fmtDate(r.dob))+'</span></td><td>'+escapeHtml(fmtDate(r.admission_date))+'</td><td>'+escapeHtml(String(r.gestational_age||'â€”'))+' w</td><td>'+fmtInt(r.birth_weight)+' g</td><td>'+escapeHtml(r.sex||'â€”')+'</td><td>'+escapeHtml(r.diagnosis||'â€”')+'</td><td>'+escapeHtml(r.respiratory_support||'â€”')+'</td><td>'+escapeHtml(String(r.length_of_stay||0))+' d</td><td><span class="outcome-pill '+escapeHtml(outcomeClass(r.outcome))+'">'+escapeHtml(r.outcome||'â€”')+'</span></td><td><div class="row"><button class="btn-sm btn-secondary" data-edit="'+escapeHtml(r.id)+'">Edit</button><button class="btn-sm btn-danger" data-delete="'+escapeHtml(r.id)+'">Delete</button></div></td></tr>').join('')+'</tbody></table>' : '<div class="empty">No matching records found. Adjust filters or add a new admission.</div>')+'</div></section></section>');
+      }
+      function tableHead(key,label){ return '<th data-sort="'+key+'">'+label+(state.sort.key===key ? '<span class="sort">'+(state.sort.dir==='asc'?'â–²':'â–¼')+'</span>' : '')+'</th>'; }
 
-    const exportJson = document.getElementById("exportJson");
-    if (exportJson) {
-      exportJson.addEventListener("click", function () {
-        downloadFile("nicu-records.json", JSON.stringify(reportRecords(), null, 2), "application/json");
-      });
-    }
+      function analyticsPage(){
+        const a = analytics(state.records);
+        return shell('<section class="page"><div class="page-header"><h2>Analytics center</h2><p>Live charts and NICU quality indicators generated directly in the browser from current admissions data.</p></div><div class="metrics"><div class="metric"><div class="k">Total admissions</div><div class="v">'+a.total+'</div><div class="s">All records</div></div><div class="metric"><div class="k">Active patients</div><div class="v">'+a.active+'</div><div class="s">Ongoing admissions</div></div><div class="metric"><div class="k">Avg LOS</div><div class="v">'+fmt1(a.avgLos)+' d</div><div class="s">Mean stay duration</div></div><div class="metric"><div class="k">Low birth weight</div><div class="v">'+a.lbw+'</div><div class="s">Below 2500 g</div></div><div class="metric"><div class="k">Preterm</div><div class="v">'+a.preterm+'</div><div class="s">Below 37 weeks</div></div><div class="metric"><div class="k">Mortality</div><div class="v">'+fmt1(a.mortality)+'%</div><div class="s">Deceased / total</div></div></div><section class="card"><div class="card-head"><div><h3>Visual summaries</h3><p>Charts for outcomes, sex, birth weight bands, respiratory support usage, and monthly admissions.</p></div></div><div class="chart-grid"><div class="chart-card"><div class="card-head"><h4>Outcomes distribution</h4><span class="tiny">Donut</span></div><div class="chart-wrap"><canvas id="chartOutcomes"></canvas></div></div><div class="chart-card"><div class="card-head"><h4>Sex distribution</h4><span class="tiny">Donut</span></div><div class="chart-wrap"><canvas id="chartSex"></canvas></div></div><div class="chart-card"><div class="card-head"><h4>Birth weight bands</h4><span class="tiny">Bars</span></div><div class="chart-wrap"><canvas id="chartWeight"></canvas></div></div><div class="chart-card"><div class="card-head"><h4>Respiratory support usage</h4><span class="tiny">Bars</span></div><div class="chart-wrap"><canvas id="chartSupport"></canvas></div></div><div class="chart-card" style="grid-column:1/-1"><div class="card-head"><h4>Monthly admissions trend</h4><span class="tiny">Line</span></div><div class="chart-wrap"><canvas id="chartTrend"></canvas></div></div></div></section></section>');
+      }
 
-    const settingsForm = document.getElementById("settingsForm");
-    if (settingsForm) {
-      settingsForm.addEventListener("submit", async function (event) {
-        event.preventDefault();
-        if (!isAdmin()) {
-          setStatus("Only admin users can save settings.", "error");
-          return;
+      function reportsPage(){
+        const reportTypes = [
+          ['census','NICU census / summary report'],
+          ['outcomes','Outcomes report'],
+          ['monthly','Monthly admissions report'],
+          ['patient','Single patient summary report']
+        ];
+        return shell('<section class="page"><div class="page-header"><h2>Reports</h2><p>Generate branded, browser-side PDF-ready reports. Use Print / Save as PDF from the preview to download a portable document.</p></div><div class="reports-grid"><section class="card"><div class="card-head"><div><h3>Report builder</h3><p>Select report type, optional date range, and a patient when needed.</p></div></div><div class="report-list">'+reportTypes.map(([id,label]) => '<button class="report-item '+(state.report.type===id?'active':'')+'" data-report-type="'+id+'"><strong>'+escapeHtml(label)+'</strong><div class="tiny" style="margin-top:6px">'+(id==='patient'?'Focused summary for one admission.':'Aggregated multi-patient report with current KPIs.')+'</div></button>').join('')+'</div><div class="field-grid" style="margin-top:16px"><div class="field"><label>From date</label><input type="date" id="reportFrom" value="'+escapeHtml(state.report.from)+'"></div><div class="field"><label>To date</label><input type="date" id="reportTo" value="'+escapeHtml(state.report.to)+'"></div><div class="field full"><label>Patient selection</label><select id="reportPatient"><option value="">Select patient for single summary</option>'+state.records.map(r => '<option value="'+escapeHtml(r.id)+'" '+(String(r.id)===String(state.report.patientId)?'selected':'')+'>'+escapeHtml(r.patient_id+' Â· '+r.baby_name)+'</option>').join('')+'</select></div></div><div class="row" style="margin-top:16px"><button class="btn btn-primary" id="printReport">Print / Save as PDF</button><button class="btn btn-secondary" id="refreshPreview">Refresh preview</button></div><p class="tiny" style="margin-top:12px">For static deployments, browser print is the most CSP-safe client-side PDF path. Open the preview and choose <em>Save as PDF</em>.</p></section><section>'+reportHtml()+'</section></div></section>');
+      }
+
+      function settingsPage(){
+        return shell('<section class="page"><div class="page-header"><h2>Settings and setup</h2><p>Configure Supabase credentials, update hospital branding, review schema guidance, and see deployment notes for Vercel or Netlify.</p></div><div class="setup-grid"><section class="card"><div class="card-head"><div><h3>Supabase configuration</h3><p>Credentials are stored locally in this browser for demo convenience.</p></div><span class="mode-pill '+(isConfigured()?'':'demo')+'">'+(isConfigured()?'Configured':'Not configured')+'</span></div><form id="configForm" class="stack"><div class="field"><label>SUPABASE_URL</label><input name="url" placeholder="https://your-project.supabase.co" value="'+escapeHtml(state.config.url)+'"></div><div class="field"><label>SUPABASE_ANON_KEY</label><textarea name="anonKey" placeholder="Paste the anon public key">'+escapeHtml(state.config.anonKey)+'</textarea></div><div class="row"><button class="btn btn-primary" type="submit">Save configuration</button><button class="btn btn-secondary" type="button" id="testConfig">Test connection</button><button class="btn btn-danger" type="button" id="clearConfig">Clear configuration</button></div></form></section><section class="card"><div class="card-head"><div><h3>Branding</h3><p>Edit the hospital identity shown across the app and reports.</p></div></div><form id="brandingForm" class="stack"><div class="field"><label>Hospital name</label><input name="hospitalName" value="'+escapeHtml(state.branding.hospitalName)+'"></div><div class="field"><label>Unit name</label><input name="unitName" value="'+escapeHtml(state.branding.unitName)+'"></div><div class="field"><label>Address</label><input name="address" value="'+escapeHtml(state.branding.address)+'"></div><div class="field"><label>Contact info</label><input name="contact" value="'+escapeHtml(state.branding.contact)+'"></div><button class="btn btn-primary" type="submit">Save branding</button></form></section><section class="card"><div class="card-head"><div><h3>Schema guidance</h3><p>Suggested table for cloud CRUD.</p></div></div><div class="code">'+escapeHtml(schemaSql())+'</div></section><section class="card"><div class="card-head"><div><h3>Deployment help</h3><p>Static frontend + Supabase backend.</p></div></div><ol class="list"><li>Place this single HTML app on Netlify or Vercel as a static site.</li><li>Open the deployed app and paste <strong>SUPABASE_URL</strong> and <strong>SUPABASE_ANON_KEY</strong> in Settings, or inject them during a build step if you later split the file.</li><li>Create the <code>nicu_records</code> table in Supabase and configure RLS policies appropriate for your organization.</li><li>Use Supabase Authentication with email sign-in enabled.</li><li>Generate reports client-side and save them as PDF using the browser print dialog.</li></ol><div class="empty" style="margin-top:14px">This Goose app remains self-contained and deployable without server-only dependencies.</div></section></div></section>');
+      }
+
+      function aboutPage(){
+        return shell('<section class="page"><div class="page-header"><h2>About the NICU platform</h2><p>A polished clinical web app for data capture, quality review, and neonatal reporting with a design language inspired by modern hospital dashboards.</p></div><div class="about-grid"><section class="card"><div class="card-head"><div><h3>Hospital identity</h3><p>Editable institutional information used across the dashboard and exported reports.</p></div></div><div class="stack"><div class="report-box"><strong>Hospital</strong><div class="tiny" style="margin-top:6px">'+escapeHtml(state.branding.hospitalName)+'</div></div><div class="report-box"><strong>Unit</strong><div class="tiny" style="margin-top:6px">'+escapeHtml(state.branding.unitName)+'</div></div><div class="report-box"><strong>Address</strong><div class="tiny" style="margin-top:6px">'+escapeHtml(state.branding.address)+'</div></div><div class="report-box"><strong>Contact</strong><div class="tiny" style="margin-top:6px">'+escapeHtml(state.branding.contact)+'</div></div></div></section><section class="card"><div class="card-head"><div><h3>Capabilities</h3><p>What this version includes today.</p></div></div><ul class="list"><li>Dedicated login page with Supabase email auth flows and session persistence.</li><li>Protected multi-page navigation for dashboard, records, analytics, and reports.</li><li>Supabase REST CRUD for NICU records with local demo fallback.</li><li>Live KPI cards, visual charts, and auto-generated insights.</li><li>Branded report preview with print-to-PDF workflow.</li><li>Static deployment guidance for Netlify and Vercel.</li></ul></section></div></section>');
+      }
+
+      function render(){
+        routeGuard();
+        let html = '';
+        if(!isAuthenticated()) html = authPage();
+        else if(state.route==='dashboard') html = dashboardPage();
+        else if(state.route==='new-record') html = recordFormPage();
+        else if(state.route==='records') html = recordsPage();
+        else if(state.route==='analytics') html = analyticsPage();
+        else if(state.route==='reports') html = reportsPage();
+        else if(state.route==='settings') html = settingsPage();
+        else if(state.route==='about') html = aboutPage();
+        else { saveRoute(isAuthenticated() ? 'dashboard' : 'login'); html = isAuthenticated() ? dashboardPage() : authPage(); }
+        app.innerHTML = html;
+        bindEvents();
+        drawVisibleCharts();
+      }
+
+      function bindEvents(){
+        app.querySelectorAll('[data-route]').forEach(btn => btn.addEventListener('click', () => { clearStatus(); saveRoute(btn.getAttribute('data-route')); render(); }));
+        app.querySelectorAll('[data-auth-view]').forEach(btn => btn.addEventListener('click', () => { state.authView = btn.getAttribute('data-auth-view'); state.authStatus=''; state.authStatusType=''; render(); }));
+        const authForm = document.getElementById('authForm');
+        if(authForm){
+          authForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            const fd = new FormData(authForm);
+            const email = String(fd.get('email')||'').trim();
+            const password = String(fd.get('password')||'').trim();
+            if(!email) return setStatus('Please enter your email address.', 'error', 'auth');
+            state.loading = true; render();
+            try{
+              if(state.authView==='signin'){
+                await signIn(email,password);
+                saveRoute('dashboard');
+                setStatus('Signed in successfully.', 'success', 'auth');
+                await fetchRecords();
+              } else if(state.authView==='signup'){
+                const res = await signUp(email,password);
+                if(res && res.access_token){ saveRoute('dashboard'); await fetchRecords(); setStatus('Account created and signed in.', 'success', 'auth'); }
+                else setStatus('Sign-up submitted. Check your email for confirmation if your project requires it.', 'success', 'auth');
+              } else {
+                await forgotPassword(email);
+                setStatus('Password reset email requested. Check your inbox.', 'success', 'auth');
+              }
+            } catch(err){ setStatus(err.message || 'Authentication failed.', 'error', 'auth'); }
+            state.loading = false; render();
+          });
         }
-        const formData = new FormData(settingsForm);
-        const payload = {
-          hospitalName: String(formData.get("hospitalName") || "").trim(),
-          unitName: String(formData.get("unitName") || "").trim(),
-          address: String(formData.get("address") || "").trim(),
-          contact: String(formData.get("contact") || "").trim(),
-          adminEmails: String(formData.get("adminEmails") || "")
-            .split(",")
-            .map(function (value) { return value.trim().toLowerCase(); })
-            .filter(Boolean)
+        const demoEntry = document.getElementById('demoEntry'); if(demoEntry) demoEntry.addEventListener('click', enterDemo);
+        const goSetup = document.getElementById('goSetup'); if(goSetup) goSetup.addEventListener('click', ()=>{ enterDemo(); saveRoute('settings'); render(); });
+        const goAbout = document.getElementById('goAbout'); if(goAbout) goAbout.addEventListener('click', ()=>{ enterDemo(); saveRoute('about'); render(); });
+        const signOutBtn = document.getElementById('signOutBtn'); if(signOutBtn) signOutBtn.addEventListener('click', ()=>signOut(true));
+        const seedDemo = document.getElementById('seedDemo'); if(seedDemo) seedDemo.addEventListener('click', ()=>{ if(confirm('Reload sample demo data?')){ state.records = clone(sampleRecords); persist(KEYS.records,state.records); fetchRecords(); setStatus('Sample data reloaded.', 'success'); } });
+
+        const configForm = document.getElementById('configForm');
+        if(configForm){
+          configForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const fd = new FormData(configForm);
+            state.config = {url:String(fd.get('url')||'').trim(), anonKey:String(fd.get('anonKey')||'').trim()};
+            persist(KEYS.config, state.config);
+            setStatus('Configuration saved locally.', 'success');
+            render();
+          });
+          document.getElementById('clearConfig').addEventListener('click', ()=>{ if(confirm('Clear stored Supabase credentials?')){ state.config={url:'',anonKey:''}; persist(KEYS.config,state.config); setStatus('Configuration cleared.', 'success'); render(); } });
+          document.getElementById('testConfig').addEventListener('click', async ()=>{
+            state.loading=true; render();
+            try{
+              if(!isConfigured()) throw new Error('Enter both URL and anon key first.');
+              await fetch(state.config.url.replace(/\/$/,'') + '/rest/v1/', {headers:getHeaders(false)});
+              setStatus('Connection test sent. If your project exists, you can now sign in.', 'success');
+            }catch(err){ setStatus('Connection test failed: ' + err.message, 'error'); }
+            state.loading=false; render();
+          });
+        }
+
+        const brandingForm = document.getElementById('brandingForm');
+        if(brandingForm){
+          brandingForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const fd = new FormData(brandingForm);
+            state.branding = {hospitalName:String(fd.get('hospitalName')||''),unitName:String(fd.get('unitName')||''),address:String(fd.get('address')||''),contact:String(fd.get('contact')||'')};
+            persist(KEYS.branding,state.branding); setStatus('Branding updated.', 'success'); render();
+          });
+        }
+
+        const recordForm = document.getElementById('recordForm');
+        if(recordForm){
+          recordForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            const fd = new FormData(recordForm);
+            const record = Object.fromEntries(fd.entries());
+            ['gestational_age','birth_weight','apgar_1','apgar_5','length_of_stay','mother_age'].forEach(k => record[k]=num(record[k]));
+            const err = validateRecord(record);
+            if(err) return setStatus(err,'error');
+            state.loading=true; render();
+            try{ await saveRecord(record); saveRoute('records'); setStatus('Record saved successfully.', 'success'); }
+            catch(error){ setStatus(error.message || 'Could not save record.', 'error'); }
+            state.loading=false; render();
+          });
+          const clearBtn = document.getElementById('clearRecordForm');
+          if(clearBtn) clearBtn.addEventListener('click', ()=>{ state.editingId=''; saveRoute('new-record'); render(); });
+        }
+
+        const filterQ = document.getElementById('filterQ'); if(filterQ) filterQ.addEventListener('input', e=>{ state.filters.q=e.target.value; render(); });
+        const filterOutcome = document.getElementById('filterOutcome'); if(filterOutcome) filterOutcome.addEventListener('change', e=>{ state.filters.outcome=e.target.value; render(); });
+        const filterSex = document.getElementById('filterSex'); if(filterSex) filterSex.addEventListener('change', e=>{ state.filters.sex=e.target.value; render(); });
+        const filterSupport = document.getElementById('filterSupport'); if(filterSupport) filterSupport.addEventListener('change', e=>{ state.filters.support=e.target.value; render(); });
+        const clearFilters = document.getElementById('clearFilters'); if(clearFilters) clearFilters.addEventListener('click', ()=>{ state.filters={q:'',outcome:'',sex:'',support:''}; render(); });
+        app.querySelectorAll('th[data-sort]').forEach(th => th.addEventListener('click', ()=>{ const key=th.getAttribute('data-sort'); if(state.sort.key===key) state.sort.dir = state.sort.dir==='asc' ? 'desc' : 'asc'; else { state.sort.key=key; state.sort.dir='asc'; } render(); }));
+        app.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', ()=>{ state.editingId = btn.getAttribute('data-edit'); saveRoute('new-record'); render(); }));
+        app.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', async ()=>{ const id = btn.getAttribute('data-delete'); if(confirm('Delete this record?')){ state.loading=true; render(); try{ await removeRecord(id); setStatus('Record deleted.', 'success'); }catch(err){ setStatus(err.message || 'Delete failed.', 'error'); } state.loading=false; render(); } }));
+        const deleteAllDemo = document.getElementById('deleteAllDemo'); if(deleteAllDemo) deleteAllDemo.addEventListener('click', ()=>{ if(confirm('Delete all local demo records?')){ state.records=[]; persist(KEYS.records,state.records); setStatus('Local demo records deleted.', 'success'); render(); } });
+
+        const exportJson = document.getElementById('exportJson'); if(exportJson) exportJson.addEventListener('click', ()=>download('nicu-records.json', JSON.stringify(state.records,null,2), 'application/json'));
+        const exportCsv = document.getElementById('exportCsv'); if(exportCsv) exportCsv.addEventListener('click', ()=>download('nicu-records.csv', toCsv(state.records), 'text/csv'));
+        const importFile = document.getElementById('importFile'); if(importFile) importFile.addEventListener('change', handleImport);
+
+        app.querySelectorAll('[data-report-type]').forEach(btn => btn.addEventListener('click', ()=>{ state.report.type = btn.getAttribute('data-report-type'); render(); }));
+        const reportFrom = document.getElementById('reportFrom'); if(reportFrom) reportFrom.addEventListener('change', e=>{ state.report.from=e.target.value; render(); });
+        const reportTo = document.getElementById('reportTo'); if(reportTo) reportTo.addEventListener('change', e=>{ state.report.to=e.target.value; render(); });
+        const reportPatient = document.getElementById('reportPatient'); if(reportPatient) reportPatient.addEventListener('change', e=>{ state.report.patientId=e.target.value; render(); });
+        const printReport = document.getElementById('printReport'); if(printReport) printReport.addEventListener('click', ()=>window.print());
+        const refreshPreview = document.getElementById('refreshPreview'); if(refreshPreview) refreshPreview.addEventListener('click', ()=>render());
+      }
+
+      function validateRecord(r){
+        if(!r.patient_id || !r.baby_name || !r.admission_date || !r.gestational_age || !r.birth_weight || !r.sex || !r.delivery_type || !r.diagnosis || !r.respiratory_support || !r.sepsis_status || !r.feeding_type || !r.outcome || !r.antenatal_steroids) return 'Please complete all required fields.';
+        if(r.apgar_1 < 0 || r.apgar_1 > 10 || r.apgar_5 < 0 || r.apgar_5 > 10) return 'APGAR scores must be between 0 and 10.';
+        if(r.gestational_age < 20 || r.gestational_age > 45) return 'Gestational age must be between 20 and 45 weeks.';
+        if(r.birth_weight < 300 || r.birth_weight > 7000) return 'Birth weight must be between 300 and 7000 g.';
+        const dup = state.records.find(x => String(x.patient_id).toLowerCase()===String(r.patient_id).toLowerCase() && String(x.id)!==String(state.editingId));
+        if(dup) return 'Patient ID already exists. Use a unique value.';
+        return '';
+      }
+      function download(name,content,type){ const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(url),300); }
+      function toCsv(rows){ const headers=['id','patient_id','baby_name','dob','gestational_age','birth_weight','sex','delivery_type','apgar_1','apgar_5','diagnosis','respiratory_support','sepsis_status','feeding_type','admission_date','discharge_date','length_of_stay','outcome','mother_age','antenatal_steroids','notes','created_by','created_at']; return [headers.join(',')].concat(rows.map(r=>headers.map(h=>csvCell(r[h])).join(','))).join('\n'); }
+      function csvCell(v){ const s=String(v==null?'':v).replace(/"/g,'""'); return /[",\n]/.test(s)?'"'+s+'"':s; }
+      function parseCsv(text){ const rows=[]; let row=[], cell='', q=false; for(let i=0;i<text.length;i++){ const ch=text[i], next=text[i+1]; if(ch==='"'){ if(q && next==='"'){ cell+='"'; i++; } else q=!q; } else if(ch===',' && !q){ row.push(cell); cell=''; } else if((ch==='\n'||ch==='\r') && !q){ if(ch==='\r' && next==='\n') i++; row.push(cell); if(row.some(v=>v!=='')) rows.push(row); row=[]; cell=''; } else cell+=ch; } if(cell.length || row.length){ row.push(cell); rows.push(row); } if(!rows.length) return []; const headers=rows[0].map(h=>h.trim()); return rows.slice(1).map(r=>{ const obj={}; headers.forEach((h,i)=>obj[h]=(r[i]||'').trim()); return obj; }); }
+      async function handleImport(e){
+        const file = e.target.files && e.target.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = async ()=>{
+          try{
+            const text = String(reader.result||'');
+            const incoming = file.name.toLowerCase().endsWith('.json') ? JSON.parse(text) : parseCsv(text);
+            if(!Array.isArray(incoming) || !incoming.length) throw new Error('No valid records found in file.');
+            const normalized = incoming.map(r => ({...r, gestational_age:num(r.gestational_age), birth_weight:num(r.birth_weight), apgar_1:num(r.apgar_1), apgar_5:num(r.apgar_5), length_of_stay:num(r.length_of_stay), mother_age:num(r.mother_age), id:r.id || uid()}));
+            state.records = normalized.concat(state.records.filter(old => !normalized.some(n => String(n.patient_id).toLowerCase()===String(old.patient_id).toLowerCase())));
+            persist(KEYS.records,state.records);
+            setStatus('Imported '+normalized.length+' record(s) into local demo storage.', 'success');
+            render();
+          }catch(err){ setStatus(err.message || 'Import failed.', 'error'); render(); }
+          e.target.value='';
         };
-
-        state.loading = true;
-        render();
-        try {
-          await db.collection("settings").doc("app").set(payload, { merge: true });
-          setStatus("Settings saved and synced.", "success");
-        } catch (error) {
-          setStatus(error.message || "Settings could not be saved.", "error");
-        }
-        state.loading = false;
-        render();
-      });
-    }
-  }
-
-  function bindDraftPersistence(form) {
-    form.querySelectorAll("input, select, textarea").forEach(function (element) {
-      const eventName = element.tagName === "SELECT" ? "change" : "input";
-      element.addEventListener(eventName, function () {
-        saveDraft(formToRecord(form));
-      });
-    });
-  }
-
-  function bindFilter(id, key, eventName) {
-    const element = document.getElementById(id);
-    if (!element) {
-      return;
-    }
-    element.addEventListener(eventName, function (event) {
-      state.filters[key] = event.target.value;
-      render();
-    });
-  }
-
-  function formToRecord(form) {
-    const formData = new FormData(form);
-    const raw = Object.fromEntries(formData.entries());
-    const existing = state.editingId ? state.records.find(function (item) { return item.id === state.editingId; }) : null;
-    return {
-      id: state.editingId || uid("rec"),
-      patient_id: String(raw.patient_id || "").trim() || (existing && existing.patient_id) || autoPatientId(),
-      baby_name: String(raw.baby_name || "").trim(),
-      sex: String(raw.sex || "").trim(),
-      dob: String(raw.dob || "").trim(),
-      admission_date: String(raw.admission_date || "").trim(),
-      discharge_date: String(raw.discharge_date || "").trim(),
-      unit: String(raw.unit || "").trim() || "NICU",
-      bed_number: String(raw.bed_number || "").trim(),
-      admission_source: String(raw.admission_source || "").trim() || "Direct Admission",
-      birth_origin: String(raw.birth_origin || "").trim() || "Inborn",
-      diagnosis_group: String(raw.diagnosis_group || "").trim(),
-      diagnosis_detail: String(raw.diagnosis_detail || "").trim(),
-      gestational_age: toNumericOrEmpty(raw.gestational_age),
-      birth_weight: toNumericOrEmpty(raw.birth_weight),
-      apgar_1: toNumericOrEmpty(raw.apgar_1),
-      apgar_5: toNumericOrEmpty(raw.apgar_5),
-      respiratory_support: String(raw.respiratory_support || "").trim(),
-      sepsis_status: String(raw.sepsis_status || "").trim(),
-      feeding_type: String(raw.feeding_type || "").trim(),
-      mother_name: String(raw.mother_name || "").trim(),
-      mother_age: toNumericOrEmpty(raw.mother_age),
-      father_name: String(raw.father_name || "").trim(),
-      contact_number: String(raw.contact_number || "").trim(),
-      address: String(raw.address || "").trim(),
-      delivery_type: String(raw.delivery_type || "").trim(),
-      antenatal_steroids: String(raw.antenatal_steroids || "").trim(),
-      outcome: String(raw.outcome || "").trim() || "Admitted",
-      death_timing_bucket: String(raw.death_timing_bucket || "").trim(),
-      death_timing_detail: String(raw.death_timing_detail || "").trim(),
-      death_cause_detail: String(raw.death_cause_detail || "").trim(),
-      notes: String(raw.notes || "").trim(),
-      created_at: existing ? existing.created_at : new Date().toISOString(),
-      created_by: existing ? existing.created_by : currentEmail(),
-      updated_at: new Date().toISOString(),
-      updated_by: currentEmail()
-    };
-  }
-
-  function validateRecord(record) {
-    if (!record.admission_date) {
-      return "Admission date is required.";
-    }
-    if (record.gestational_age !== "" && (record.gestational_age < 20 || record.gestational_age > 45)) {
-      return "Gestational age must be between 20 and 45 weeks when entered.";
-    }
-    if (record.birth_weight !== "" && (record.birth_weight < 300 || record.birth_weight > 7000)) {
-      return "Birth weight must be between 300 and 7000 g when entered.";
-    }
-    if (record.apgar_1 !== "" && (record.apgar_1 < 0 || record.apgar_1 > 10)) {
-      return "APGAR at 1 minute must be between 0 and 10.";
-    }
-    if (record.apgar_5 !== "" && (record.apgar_5 < 0 || record.apgar_5 > 10)) {
-      return "APGAR at 5 minutes must be between 0 and 10.";
-    }
-    if (record.outcome === "Death" && !record.death_cause_detail) {
-      return "Please choose the death cause detail for death outcomes.";
-    }
-    const duplicate = state.records.find(function (item) {
-      return String(item.patient_id || "").toLowerCase() === String(record.patient_id || "").toLowerCase() && item.id !== record.id;
-    });
-    if (duplicate) {
-      return "Patient ID already exists. Open the existing record for updates.";
-    }
-    return "";
-  }
-
-  function downloadFile(name, content, type) {
-    const blob = new Blob([content], { type: type });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = name;
-    anchor.click();
-    setTimeout(function () {
-      URL.revokeObjectURL(url);
-    }, 300);
-  }
-
-  function toCsv(rows) {
-    const headers = [
-      "patient_id", "baby_name", "admission_date", "discharge_date", "unit", "admission_source", "birth_origin", "sex", "dob", "mother_name", "mother_age", "contact_number", "address", "delivery_type", "antenatal_steroids", "gestational_age", "birth_weight", "apgar_1", "apgar_5", "respiratory_support", "sepsis_status", "feeding_type", "diagnosis_group", "diagnosis_detail", "outcome", "death_timing_bucket", "death_timing_detail", "death_cause_detail", "notes", "created_by", "updated_by", "created_at", "updated_at"
-    ];
-    return [headers.join(",")].concat(rows.map(function (row) {
-      return headers.map(function (header) {
-        return csvCell(row[header]);
-      }).join(",");
-    })).join("\n");
-  }
-
-  function csvCell(value) {
-    const text = String(value == null ? "" : value).replace(/"/g, "\"\"");
-    return /[",\n]/.test(text) ? "\"" + text + "\"" : text;
-  }
-
-  function exportWorkbook() {
-    if (typeof XLSX === "undefined") {
-      setStatus("Excel library did not load. Please refresh and try again.", "error");
-      return;
-    }
-    const records = reportRecords();
-    const summary = monthlySummary(records);
-    const totals = totalRow(summary);
-    const percentage = percentageRow(summary);
-    const patientSheetRows = records.map(function (item) {
-      return {
-        "Patient ID": item.patient_id,
-        "Baby Name": item.baby_name,
-        "Admission Date": item.admission_date,
-        "Outcome Date": item.discharge_date,
-        "Unit": item.unit,
-        "Admission Source": item.admission_source,
-        "Birth Origin": item.birth_origin,
-        "Sex": item.sex,
-        "DOB": item.dob,
-        "Gestational Age": item.gestational_age,
-        "Birth Weight": item.birth_weight,
-        "Diagnosis Group": item.diagnosis_group,
-        "Diagnosis Detail": item.diagnosis_detail,
-        "Outcome": item.outcome,
-        "Death Timing Bucket": item.death_timing_bucket,
-        "Death Timing Detail": item.death_timing_detail,
-        "Death Cause Detail": item.death_cause_detail,
-        "Mother Name": item.mother_name,
-        "Contact Number": item.contact_number,
-        "Notes": item.notes
-      };
-    });
-
-    const referenceRows = DEATH_TIMING_DETAILS.map(function (item) {
-      return { Type: "Death Timing Detail", Value: item };
-    }).concat(DEATH_CAUSE_DETAILS.map(function (item) {
-      return { Type: "Death Cause Detail", Value: item };
-    }));
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(patientSheetRows.length ? patientSheetRows : [{ "Patient ID": "No records in selected range" }]), "Patient Records");
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(summary.concat([totals, percentage])), "Monthly Summary");
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(referenceRows), "Death Detail Reference");
-    XLSX.writeFile(workbook, "nicu-monthly-summary.xlsx");
-    setStatus("Excel workbook exported successfully.", "success");
-  }
-
-  async function ensureProfileAndSettings(user) {
-    const settingsRef = db.collection("settings").doc("app");
-    const profileRef = db.collection("users").doc(user.uid);
-    const settingsSnap = await settingsRef.get();
-    let settings = settingsSnap.exists ? Object.assign({}, baseSettings, settingsSnap.data()) : Object.assign({}, baseSettings);
-
-    const hasAdmin = Array.isArray(settings.adminEmails) && settings.adminEmails.length > 0;
-    if (!hasAdmin && user.email) {
-      settings.adminEmails = [String(user.email).trim().toLowerCase()];
-      await settingsRef.set(settings, { merge: true });
-    } else if (!settingsSnap.exists) {
-      await settingsRef.set(settings, { merge: true });
-    }
-
-    const email = String(user.email || "").trim().toLowerCase();
-    const role = (settings.adminEmails || []).includes(email) ? "admin" : "staff";
-
-    await profileRef.set({
-      email: user.email || "",
-      displayName: user.displayName || "",
-      role: role,
-      lastLoginAt: new Date().toISOString(),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-  }
-
-  function clearSubscriptions() {
-    state.unsubscribers.forEach(function (unsubscribe) {
-      try {
-        unsubscribe();
-      } catch (error) {
+        reader.onerror = ()=>{ setStatus('Could not read the selected file.', 'error'); render(); e.target.value=''; };
+        reader.readAsText(file);
       }
-    });
-    state.unsubscribers = [];
-  }
 
-  function subscribeToCloud() {
-    if (!state.currentUser) {
-      return;
-    }
-    clearSubscriptions();
-
-    const settingsUnsub = db.collection("settings").doc("app").onSnapshot(function (snapshot) {
-      state.settings = snapshot.exists ? Object.assign({}, baseSettings, snapshot.data()) : Object.assign({}, baseSettings);
-      const email = currentEmail();
-      const role = (state.settings.adminEmails || []).includes(email) ? "admin" : "staff";
-      state.profile = Object.assign({}, state.profile || {}, { role: role });
-      render();
-    }, function (error) {
-      setStatus(friendlyFirestoreError(error, "Could not subscribe to settings."), "error");
-    });
-
-    const profileUnsub = db.collection("users").doc(state.currentUser.uid).onSnapshot(function (snapshot) {
-      if (snapshot.exists) {
-        state.profile = snapshot.data();
-        if ((state.settings.adminEmails || []).includes(currentEmail())) {
-          state.profile.role = "admin";
-        }
+      function drawVisibleCharts(){
+        if(document.getElementById('chartDashboardOutcomes')) drawDonut(document.getElementById('chartDashboardOutcomes'), countBy(state.records,'outcome'), ['#2d91cb','#52c3bf','#cf4f69','#c78322','#7eb7ff']);
+        if(document.getElementById('chartDashboardTrend')) drawLine(document.getElementById('chartDashboardTrend'), monthlyTrend(state.records));
+        if(document.getElementById('chartOutcomes')) drawDonut(document.getElementById('chartOutcomes'), countBy(state.records,'outcome'), ['#2d91cb','#52c3bf','#cf4f69','#c78322','#7eb7ff']);
+        if(document.getElementById('chartSex')) drawDonut(document.getElementById('chartSex'), countBy(state.records,'sex'), ['#7ab8f6','#f1a3cf','#9dd8c7','#c4cbff']);
+        if(document.getElementById('chartWeight')) drawBars(document.getElementById('chartWeight'), weightBands(state.records), '#7ab8f6');
+        if(document.getElementById('chartSupport')) drawBars(document.getElementById('chartSupport'), countBy(state.records,'respiratory_support'), '#52c3bf');
+        if(document.getElementById('chartTrend')) drawLine(document.getElementById('chartTrend'), monthlyTrend(state.records));
       }
-      render();
-    }, function (error) {
-      setStatus(friendlyFirestoreError(error, "Could not subscribe to profile."), "error");
-    });
+      function setupCanvas(canvas){ const ratio=window.devicePixelRatio||1; const rect=canvas.getBoundingClientRect(); const width=Math.max(240,Math.floor(rect.width)); const height=Math.max(220,Math.floor(rect.height)); canvas.width=width*ratio; canvas.height=height*ratio; const ctx=canvas.getContext('2d'); ctx.setTransform(ratio,0,0,ratio,0,0); return {ctx,width,height}; }
+      function drawEmpty(canvas,msg){ const {ctx,width,height}=setupCanvas(canvas); ctx.clearRect(0,0,width,height); ctx.fillStyle='#f2f8fb'; ctx.fillRect(0,0,width,height); ctx.fillStyle='#6b8394'; ctx.font='600 14px Inter'; ctx.textAlign='center'; ctx.fillText(msg,width/2,height/2); }
+      function drawDonut(canvas,counts,colors){ const entries=Object.entries(counts).filter(([,v])=>v>0); if(!entries.length) return drawEmpty(canvas,'No data'); const {ctx,width,height}=setupCanvas(canvas); ctx.clearRect(0,0,width,height); const total=entries.reduce((s,[,v])=>s+v,0); const cx=width*.34, cy=height*.52, r=Math.min(width,height)*.28, inner=r*.58; let start=-Math.PI/2; entries.forEach(([label,val],i)=>{ const angle=(val/total)*Math.PI*2; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,start,start+angle); ctx.closePath(); ctx.fillStyle=colors[i%colors.length]; ctx.fill(); start+=angle; }); ctx.globalCompositeOperation='destination-out'; ctx.beginPath(); ctx.arc(cx,cy,inner,0,Math.PI*2); ctx.fill(); ctx.globalCompositeOperation='source-over'; ctx.fillStyle='#163246'; ctx.font='800 24px Inter'; ctx.textAlign='center'; ctx.fillText(total,cx,cy+6); ctx.font='600 12px Inter'; ctx.fillStyle='#647f92'; ctx.fillText('records',cx,cy+24); let y=28; entries.forEach(([label,val],i)=>{ ctx.fillStyle=colors[i%colors.length]; ctx.beginPath(); ctx.arc(width*.68,y,6,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#163246'; ctx.textAlign='left'; ctx.font='600 12px Inter'; ctx.fillText(label+' ('+val+')', width*.68+12, y+4); y+=24; }); }
+      function drawBars(canvas,counts,color){ const entries=Object.entries(counts); if(!entries.length) return drawEmpty(canvas,'No data'); const {ctx,width,height}=setupCanvas(canvas); ctx.clearRect(0,0,width,height); const pad={t:18,r:16,b:54,l:34}, iw=width-pad.l-pad.r, ih=height-pad.t-pad.b; const max=Math.max(...entries.map(e=>e[1]),1); ctx.strokeStyle='#e4eef5'; for(let i=0;i<=4;i++){ const y=pad.t+ih-(ih*i/4); ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(width-pad.r,y); ctx.stroke(); ctx.fillStyle='#8aa0b1'; ctx.font='11px Inter'; ctx.textAlign='right'; ctx.fillText(Math.round(max*i/4), pad.l-6, y+4); } const barW=iw/entries.length*.62; entries.forEach(([label,val],i)=>{ const x=pad.l+(iw/entries.length)*i+(iw/entries.length-barW)/2; const h=max?(val/max)*ih:0; const y=pad.t+ih-h; const grad=ctx.createLinearGradient(0,y,0,y+h); grad.addColorStop(0,color); grad.addColorStop(1,'#d6f0f2'); roundRect(ctx,x,y,barW,h,12,true,false,grad); ctx.fillStyle='#163246'; ctx.font='700 11px Inter'; ctx.textAlign='center'; ctx.fillText(val,x+barW/2,y-6); ctx.fillStyle='#647f92'; wrapCenter(ctx,label,x+barW/2,height-28,iw/entries.length-10,12); }); }
+      function drawLine(canvas,series){ if(!series.length) return drawEmpty(canvas,'No trend data'); const {ctx,width,height}=setupCanvas(canvas); ctx.clearRect(0,0,width,height); const pad={t:20,r:20,b:42,l:34}, iw=width-pad.l-pad.r, ih=height-pad.t-pad.b, max=Math.max(...series.map(s=>s.count),1); ctx.strokeStyle='#e4eef5'; for(let i=0;i<=4;i++){ const y=pad.t+ih-(ih*i/4); ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(width-pad.r,y); ctx.stroke(); ctx.fillStyle='#8aa0b1'; ctx.font='11px Inter'; ctx.textAlign='right'; ctx.fillText(Math.round(max*i/4), pad.l-6, y+4); } ctx.beginPath(); series.forEach((p,i)=>{ const x=pad.l+(iw*(series.length===1?.5:i/(series.length-1))); const y=pad.t+ih-(p.count/max)*ih; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }); ctx.strokeStyle='#2d91cb'; ctx.lineWidth=3; ctx.stroke(); ctx.lineTo(pad.l+iw,pad.t+ih); ctx.lineTo(pad.l,pad.t+ih); ctx.closePath(); const fill=ctx.createLinearGradient(0,pad.t,0,pad.t+ih); fill.addColorStop(0,'rgba(45,145,203,.22)'); fill.addColorStop(1,'rgba(45,145,203,.02)'); ctx.fillStyle=fill; ctx.fill(); series.forEach((p,i)=>{ const x=pad.l+(iw*(series.length===1?.5:i/(series.length-1))); const y=pad.t+ih-(p.count/max)*ih; ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill(); ctx.strokeStyle='#2d91cb'; ctx.lineWidth=3; ctx.stroke(); ctx.fillStyle='#163246'; ctx.font='700 11px Inter'; ctx.textAlign='center'; ctx.fillText(p.count,x,y-10); ctx.fillStyle='#647f92'; ctx.fillText(p.label,x,height-16); }); }
+      function roundRect(ctx,x,y,w,h,r,fill,stroke,fillStyle){ const rr=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+rr,y); ctx.arcTo(x+w,y,x+w,y+h,rr); ctx.arcTo(x+w,y+h,x,y+h,rr); ctx.arcTo(x,y+h,x,y,rr); ctx.arcTo(x,y,x+w,y,rr); ctx.closePath(); if(fill){ ctx.fillStyle=fillStyle||ctx.fillStyle; ctx.fill(); } if(stroke) ctx.stroke(); }
+      function wrapCenter(ctx,text,cx,y,maxWidth,lineHeight){ const words=String(text).split(' '); let line=''; const lines=[]; words.forEach(word=>{ const test=line?line+' '+word:word; if(ctx.measureText(test).width>maxWidth && line){ lines.push(line); line=word; } else line=test; }); if(line) lines.push(line); lines.slice(0,2).forEach((ln,i)=>ctx.fillText(ln,cx,y+(i*lineHeight))); }
 
-    const recordsUnsub = db.collection("records").onSnapshot(function (snapshot) {
-      state.lastSyncAt = new Date().toISOString();
-      state.records = snapshot.docs.map(function (doc) {
-        return normalizeRecord(Object.assign({ id: doc.id }, doc.data()));
-      }).sort(function (a, b) {
-        return String(b.admission_date || "").localeCompare(String(a.admission_date || ""));
-      });
-      render();
-    }, function (error) {
-      setStatus(friendlyFirestoreError(error, "Could not subscribe to records."), "error");
-    });
+      window.addEventListener('hashchange', ()=>{ state.route = location.hash.replace('#','') || state.route; render(); });
+      window.addEventListener('resize', ()=>{ clearTimeout(window.__nicuResize); window.__nicuResize = setTimeout(drawVisibleCharts, 120); });
 
-    state.unsubscribers = [settingsUnsub, profileUnsub, recordsUnsub];
-  }
+      (async function init(){
+        await refreshUser();
+        if(isAuthenticated() && state.route !== 'login') await fetchRecords();
+        render();
+      })();
+    })();
+  </script>
+<script id="goose-smooth-script">
+(function(){
+  function two(n){ return String(n).padStart(2,'0'); }
+  function fmt(d){ return two(d.getHours())+':'+two(d.getMinutes())+':'+two(d.getSeconds())+'.'+String(Math.floor(d.getMilliseconds()/10)).padStart(2,'0'); }
+  function gooseSmoothClockTick(){ var el=document.getElementById('smoothClock'); if(el){ el.textContent=fmt(new Date()); } requestAnimationFrame(gooseSmoothClockTick); }
+  requestAnimationFrame(gooseSmoothClockTick);
 
-  const AUTH_BOOT_TIMEOUT_MS = 5000;
-  const bootTimer = setTimeout(function () {
-    if (!state.bootResolved) {
-      state.booting = false;
-      state.authStatus = "Taking longer than expected to connect. You can still sign in.";
-      state.authStatusType = "warning";
-      render();
-    }
-  }, AUTH_BOOT_TIMEOUT_MS);
-
-  auth.onAuthStateChanged(function (user) {
-    state.bootResolved = true;
-    clearTimeout(bootTimer);
-    state.booting = false;
-    state.currentUser = user || null;
-    state.authStatus = "";
-    state.authStatusType = "";
-    clearGlobalStatus();
-
-    if (!user) {
-      clearSubscriptions();
-      state.profile = null;
-      state.records = [];
-      state.settings = Object.assign({}, baseSettings);
-      render();
-      return;
-    }
-
-    // Fast path: render + subscribe immediately for returning signed-in users.
-    subscribeToCloud();
-    if (state.route === "settings" && !isAdmin()) {
-      saveRoute("dashboard");
-    }
-    render();
-
-    // Background consistency sync (do not block first paint).
-    ensureProfileAndSettings(user).catch(function (error) {
-      setStatus(friendlyFirestoreError(error, "Could not initialize Firebase data."), "error");
+  document.addEventListener('DOMContentLoaded', function(){
+    var nodes=document.querySelectorAll('.card,.panel,.stat-card,section,canvas');
+    nodes.forEach(function(n,i){
+      n.style.opacity='0';
+      n.style.transform='translateY(8px)';
+      setTimeout(function(){
+        n.style.transition=(n.style.transition? n.style.transition+',' : '') + 'opacity .45s ease, transform .45s ease';
+        n.style.opacity='1';
+        n.style.transform='translateY(0)';
+      }, 40 + i*18);
     });
   });
-
-  window.addEventListener("hashchange", function () {
-    const hash = location.hash.replace("#", "");
-    if (ROUTES.includes(hash)) {
-      state.route = hash;
-      render();
-    }
-  });
-
-  render();
 })();
-
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
