@@ -597,7 +597,7 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
         const goSetup = document.getElementById('goSetup'); if(goSetup) goSetup.addEventListener('click', ()=>{ enterDemo(); saveRoute('settings'); render(); });
         const goAbout = document.getElementById('goAbout'); if(goAbout) goAbout.addEventListener('click', ()=>{ enterDemo(); saveRoute('about'); render(); });
         const signOutBtn = document.getElementById('signOutBtn'); if(signOutBtn) signOutBtn.addEventListener('click', ()=>signOut(true));
-        const seedDemo = document.getElementById('seedDemo'); if(seedDemo) seedDemo.addEventListener('click', ()=>{ if(confirm('Reload sample demo data?')){ state.records = clone(sampleRecords); persist(KEYS.records,state.records); fetchRecords(); setStatus('Sample data reloaded.', 'success'); } });
+        const seedDemo = document.getElementById('seedDemo'); if(seedDemo) seedDemo.addEventListener('click', ()=>{ if(confirm('This will overwrite current local records with sample data. Continue?')){ state.records = clone(sampleRecords); persist(KEYS.records,state.records); fetchRecords(); setStatus('Sample data reloaded.', 'success'); } });
 
         const configForm = document.getElementById('configForm');
         if(configForm){
@@ -723,7 +723,7 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
 
       window.addEventListener('hashchange', ()=>{ state.route = location.hash.replace('#','') || state.route; render(); });
       window.addEventListener('online', ()=>{ setStatus('Back online. Sync should resume automatically.', 'success'); render(); });
-      window.addEventListener('offline', ()=>{ setStatus('You are offline. You can still view cached/demo data.', ''); render(); });
+      window.addEventListener('offline', ()=>{ setStatus('You are offline. You can still view cached local data.', ''); render(); });
       window.addEventListener('resize', ()=>{ clearTimeout(window.__nicuResize); window.__nicuResize = setTimeout(drawVisibleCharts, 120); });
 
       (async function init(){
