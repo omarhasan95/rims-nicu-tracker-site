@@ -338,7 +338,12 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
         return authFetch('/auth/v1/recover', {method:'POST', headers:getHeaders(false), body:JSON.stringify({email, redirect_to: location.href.split('#')[0] + '#login'})});
       }
       async function signInWithGoogle(){
-        if(!isConfigured()) throw new Error('Supabase is not configured yet. Add SUPABASE_URL and SUPABASE_ANON_KEY in Settings.');
+        if(!isConfigured()){
+          setStatus('Google sign-in requires Supabase setup first. Add SUPABASE_URL and SUPABASE_ANON_KEY in Settings, then try again.', 'error', 'auth');
+          saveRoute('settings');
+          render();
+          return;
+        }
         const redirectTo = location.href.split('#')[0] + '#dashboard';
         const oauthUrl = state.config.url.replace(/\/$/,'') + '/auth/v1/authorize?provider=google&redirect_to=' + encodeURIComponent(redirectTo);
         window.location.href = oauthUrl;
@@ -794,6 +799,7 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
 </script>
 </body>
 </html>
+
 
 
 
