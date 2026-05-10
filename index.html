@@ -219,6 +219,20 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
 @keyframes softFloat{0%{transform:translateY(0)}50%{transform:translateY(-4px)}100%{transform:translateY(0)}}
 .logo,.brand,.header-title{animation:softFloat 4.8s ease-in-out infinite}
     .invalid-field{border-color:#d92d20 !important;box-shadow:0 0 0 3px rgba(217,45,32,.12) !important;background:#fff5f5}</style>
+<style id="reports-spacing-fix">
+/* Reports spacing fix */
+.reports-grid{grid-template-columns:380px 1fr !important;gap:22px !important;align-items:start !important}
+.reports-grid > section:first-child{position:sticky;top:18px}
+.reports-grid > section:first-child .field-grid{grid-template-columns:1fr !important;gap:12px !important}
+.reports-grid > section:first-child .row{gap:12px !important}
+.reports-grid > section:first-child .btn{width:100%;justify-content:center}
+.report-list{gap:12px !important}
+.report-item{padding:16px !important}
+@media (max-width:1320px){
+  .reports-grid{grid-template-columns:1fr !important}
+  .reports-grid > section:first-child{position:static}
+}
+</style>
 </head>
 <body>\r\n<div id="smoothClock" class="smooth-clock" aria-live="polite"></div>
   <div id="app" class="app-shell"></div>
@@ -799,6 +813,7 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
 </script>
 </body>
 </html>
+
 
 
 
