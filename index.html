@@ -376,10 +376,6 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
         persist(KEYS.session, state.session);
         saveRoute('dashboard');
         setStatus('Signed in with Google successfully.', 'success', 'auth');
-      }      function enterDemo(){ return; }};
-        persist(KEYS.session, state.session);
-        saveRoute('dashboard');
-        setStatus('Entered demo mode with local sample data.', 'success');
       }
       function signOut(renderNow=true){
         state.session = null; persist(KEYS.session, null);
@@ -826,6 +822,7 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
 </script>
 </body>
 </html>
+
 
 
 
