@@ -193,7 +193,7 @@
       .print-target,.print-target *{visibility:visible}
       .print-target{position:absolute;left:0;top:0;width:100%;background:#fff;box-shadow:none;border:none}
     }
-  </style>
+      .invalid-field{border-color:#d92d20 !important;box-shadow:0 0 0 3px rgba(217,45,32,.12) !important;background:#fff5f5}</style>
   
   
   <script type="application/ld+json">
@@ -218,7 +218,7 @@ canvas{transition:filter .35s ease, transform .35s ease}
 canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
 @keyframes softFloat{0%{transform:translateY(0)}50%{transform:translateY(-4px)}100%{transform:translateY(0)}}
 .logo,.brand,.header-title{animation:softFloat 4.8s ease-in-out infinite}
-</style>
+    .invalid-field{border-color:#d92d20 !important;box-shadow:0 0 0 3px rgba(217,45,32,.12) !important;background:#fff5f5}</style>
 </head>
 <body>\r\n<div id="smoothClock" class="smooth-clock" aria-live="polite"></div>
   <div id="app" class="app-shell"></div>
@@ -631,11 +631,9 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
           });
         }
 
-        const recordForm = document.getElementById('recordForm');
-        if(recordForm){
+        const recordForm = document.getElementById('recordForm'); if(recordForm){ attachValidationUX(recordForm);
           recordForm.addEventListener('submit', async e => {
-            e.preventDefault();
-            const fd = new FormData(recordForm);
+            e.preventDefault(); clearValidationSummary(recordForm); if(!recordForm.checkValidity()){ recordForm.reportValidity(); showValidationSummary(recordForm,'Please complete all required fields highlighted below before saving.'); return; } const fd = new FormData(recordForm);
             const record = Object.fromEntries(fd.entries());
             ['gestational_age','birth_weight','apgar_1','apgar_5','length_of_stay','mother_age'].forEach(k => record[k]=num(record[k]));
             const err = validateRecord(record);
@@ -671,6 +669,40 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
         const refreshPreview = document.getElementById('refreshPreview'); if(refreshPreview) refreshPreview.addEventListener('click', ()=>render());
       }
 
+            function showValidationSummary(form,msg){
+        let box=form.querySelector('.form-validation-summary');
+        if(!box){ box=document.createElement('div'); box.className='form-validation-summary status error'; box.style.marginBottom='12px'; form.prepend(box); }
+        box.textContent=msg || 'Please complete all required fields.';
+      }
+      function clearValidationSummary(form){
+        const box=form.querySelector('.form-validation-summary');
+        if(box) box.remove();
+      }
+      function attachValidationUX(form){
+        const fields=form.querySelectorAll('input,select,textarea');
+        fields.forEach(f=>{
+          f.addEventListener('invalid', ()=>{
+            f.classList.add('invalid-field');
+            const field=f.closest('.field') || f.parentElement;
+            if(field && !field.querySelector('.inline-error')){
+              const hint=document.createElement('div');
+              hint.className='inline-error tiny';
+              hint.style.color='#b42318';
+              hint.style.marginTop='6px';
+              hint.textContent='This field is required or has an invalid value.';
+              field.appendChild(hint);
+            }
+          });
+          f.addEventListener('input', ()=>{
+            if(f.checkValidity()){
+              f.classList.remove('invalid-field');
+              const field=f.closest('.field') || f.parentElement;
+              const hint=field ? field.querySelector('.inline-error') : null;
+              if(hint) hint.remove();
+            }
+          });
+        });
+      }
       function validateRecord(r){
         if(!r.patient_id || !r.baby_name || !r.admission_date || !r.gestational_age || !r.birth_weight || !r.sex || !r.delivery_type || !r.diagnosis || !r.respiratory_support || !r.sepsis_status || !r.feeding_type || !r.outcome || !r.antenatal_steroids) return 'Please complete all required fields.';
         if(r.apgar_1 < 0 || r.apgar_1 > 10 || r.apgar_5 < 0 || r.apgar_5 > 10) return 'APGAR scores must be between 0 and 10.';
@@ -756,6 +788,7 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
 </script>
 </body>
 </html>
+
 
 
 
