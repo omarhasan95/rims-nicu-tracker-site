@@ -375,8 +375,7 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
         persist(KEYS.session, state.session);
         saveRoute('dashboard');
         setStatus('Signed in with Google successfully.', 'success', 'auth');
-      }      function enterDemo(){
-        state.session = {type:'demo', user:{email:'demo@local', id:'demo-user'}};
+      }      function enterDemo(){ return; }};
         persist(KEYS.session, state.session);
         saveRoute('dashboard');
         setStatus('Entered demo mode with local sample data.', 'success');
@@ -535,7 +534,7 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
       }
 
       function shell(content){
-        const userLabel = isDemo() ? 'Demo clinician' : ((state.session && state.session.user && state.session.user.email) || 'Authenticated user');
+        const userLabel = ((state.session && state.session.user && state.session.user.email) || 'Authenticated user');
         return '<div class="main-shell '+(state.loading?'loading':'')+'"><aside class="sidebar"><div class="sidebar-meta"><div class="brand"><div class="logo-mark"></div><div class="brand-copy"><strong>'+escapeHtml(state.branding.unitName)+'</strong><span>'+escapeHtml(state.branding.hospitalName)+'</span></div></div><div class="mode-pill '+(isDemo()?'demo':'')+'"><span class="dot"></span>'+escapeHtml(currentMode())+' mode</div></div><nav class="nav"><button data-route="dashboard" class="'+active('dashboard')+'">Dashboard</button><button data-route="new-record" class="'+active('new-record')+'">New Record</button><button data-route="records" class="'+active('records')+'">Records List</button><button data-route="analytics" class="'+active('analytics')+'">Analytics</button><button data-route="reports" class="'+active('reports')+'">Reports</button><button data-route="settings" class="'+active('settings')+'">Settings / Setup</button><button data-route="about" class="'+active('about')+'">About</button></nav><div class="card" style="padding:16px;border-radius:18px"><strong style="display:block">Signed in as</strong><div class="tiny" style="margin-top:8px">'+escapeHtml(userLabel)+'</div><div class="tiny" style="margin-top:6px">Session persistence uses localStorage in this browser.</div></div><div class="stack"><button class="btn btn-secondary" id="seedDemo">Reload sample data</button><button class="btn btn-danger" id="signOutBtn">Sign out</button></div></aside><main class="content"><div class="topbar"><div><strong>'+escapeHtml(state.branding.hospitalName)+'</strong><div class="tiny">'+escapeHtml(state.branding.address)+' Â· '+escapeHtml(state.branding.contact)+'</div></div><div class="topbar-actions"><span class="info-pill" style="background:#f3fbff;border:1px solid var(--line);color:var(--muted)">Active route: '+escapeHtml(state.route)+'</span><button class="btn btn-secondary" data-route="new-record">Add record</button><button class="btn btn-primary" data-route="reports">Open reports</button></div></div>'+(state.globalStatus ? '<div class="card" style="padding:14px;margin-top:18px;border-radius:18px"><div class="status '+escapeHtml(state.globalStatusType)+'">'+escapeHtml(state.globalStatus)+'</div></div>' : '')+content+'<div class="footer-note">This tool supports NICU quality improvement and operational review. It is not a substitute for clinical judgment.</div></main></div>';
       }
       function active(route){ return state.route===route ? 'active' : ''; }
@@ -629,7 +628,6 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
           });
         }
         const googleSignIn = document.getElementById('googleSignIn'); if(googleSignIn) googleSignIn.addEventListener('click', async ()=>{ try{ await signInWithGoogle(); }catch(err){ setStatus(err.message || 'Google sign-in could not start.', 'error', 'auth'); } });
-        const demoEntry = document.getElementById('demoEntry'); if(demoEntry) demoEntry.addEventListener('click', enterDemo);
                 const pwd = document.getElementById('authPassword');
         const tgl = document.getElementById('togglePassword');
         if(pwd && tgl){ tgl.addEventListener('click', ()=>{ const isText = pwd.type==='text'; pwd.type = isText ? 'password' : 'text'; tgl.textContent = isText ? 'Show' : 'Hide'; }); }
@@ -694,7 +692,7 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
         app.querySelectorAll('th[data-sort]').forEach(th => th.addEventListener('click', ()=>{ const key=th.getAttribute('data-sort'); if(state.sort.key===key) state.sort.dir = state.sort.dir==='asc' ? 'desc' : 'asc'; else { state.sort.key=key; state.sort.dir='asc'; } render(); }));
         app.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', ()=>{ state.editingId = btn.getAttribute('data-edit'); saveRoute('new-record'); render(); }));
         app.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', async ()=>{ const id = btn.getAttribute('data-delete'); if(confirm('Delete this record?')){ state.loading=true; render(); try{ await removeRecord(id); setStatus('Record deleted.', 'success'); }catch(err){ setStatus(err.message || 'Delete failed.', 'error'); } state.loading=false; render(); } }));
-        const deleteAllDemo = document.getElementById('deleteAllDemo'); if(deleteAllDemo) deleteAllDemo.addEventListener('click', ()=>{ if(confirm('Delete all local demo records?')){ state.records=[]; persist(KEYS.records,state.records); setStatus('Local demo records deleted.', 'success'); render(); } });
+        const deleteAllDemo = document.getElementById('deleteAllDemo'); if(deleteAllDemo) deleteAllDemo.addEventListener('click', ()=>{ if(confirm('Delete all local records?')){ state.records=[]; persist(KEYS.records,state.records); setStatus('Local demo records deleted.', 'success'); render(); } });
 
         const exportJson = document.getElementById('exportJson'); if(exportJson) exportJson.addEventListener('click', ()=>download('nicu-records.json', JSON.stringify(state.records,null,2), 'application/json'));
         const exportCsv = document.getElementById('exportCsv'); if(exportCsv) exportCsv.addEventListener('click', ()=>download('nicu-records.csv', toCsv(state.records), 'text/csv'));
@@ -766,7 +764,7 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
             const normalized = incoming.map(r => ({...r, gestational_age:num(r.gestational_age), birth_weight:num(r.birth_weight), apgar_1:num(r.apgar_1), apgar_5:num(r.apgar_5), length_of_stay:num(r.length_of_stay), mother_age:num(r.mother_age), id:r.id || uid()}));
             state.records = normalized.concat(state.records.filter(old => !normalized.some(n => String(n.patient_id).toLowerCase()===String(old.patient_id).toLowerCase())));
             persist(KEYS.records,state.records);
-            setStatus('Imported '+normalized.length+' record(s) into local demo storage.', 'success');
+            setStatus('Imported '+normalized.length+' record(s) into local storage.', 'success');
             render();
           }catch(err){ setStatus(err.message || 'Import failed.', 'error'); render(); }
           e.target.value='';
@@ -827,6 +825,7 @@ canvas:hover{filter:saturate(1.08); transform:translateY(-1px)}
 </script>
 </body>
 </html>
+
 
 
 
